@@ -1,279 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Atharv Sharma - Home</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://unpkg.com/ionicons@5.5.2/dist/ionicons.css" rel="stylesheet">
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideInLeft {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    .animate-fade-in { animation: fadeIn 1s ease-out; }
-    .animate-slide-in { animation: slideInLeft 0.5s ease-out; }
-    .nav-link:nth-child(1) { animation-delay: 0.1s; }
-    .nav-link:nth-child(2) { animation-delay: 0.2s; }
-    .nav-link:nth-child(3) { animation-delay: 0.3s; }
-    .nav-link:nth-child(4) { animation-delay: 0.4s; }
-    .blog-card:nth-child(1) { animation-delay: 0.2s; }
-    .blog-card:nth-child(2) { animation-delay: 0.4s; }
-    .project-card:nth-child(1) { animation-delay: 0.2s; }
-    .project-card:nth-child(2) { animation-delay: 0.4s; }
-    .blog-image-container {
-      position: relative;
-      overflow: hidden;
-      background-color: #1F2937; /* Fallback for broken images */
-    }
-    .blog-image-container img {
-      transition: transform 0.3s ease;
-    }
-    .blog-card:hover .blog-image-container img {
-      transform: scale(1.05); /* Subtle zoom effect on hover */
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Focus</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+<style>
+:root {
+  --bg: #000;
+  --panel: #0a0a0a;
+  --card: #111;
+  --divider: #1c1c1e;
+  --text: #f2f2f7;
+  --muted: #8e8e93;
+  --accent: #7c7cff;
+  --accent2: #5eead4;
+  --danger: #ff453a;
+  --radius: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro", system-ui, sans-serif;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 16px 96px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 0;
+}
+
+button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.section {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-top: 1px solid var(--divider);
+  transition: transform .3s ease, opacity .3s ease;
+}
+
+.item.done {
+  opacity: 0;
+  transform: translateX(80px);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+}
+
+.check.done {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: var(--panel);
+  border-top: 1px solid var(--divider);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0 env(safe-area-inset-bottom);
+}
+</style>
 </head>
-<body class="bg-gray-950 text-gray-200">
-  <!-- Header -->
-  <header class="fixed top-0 left-0 w-full p-6 border-b border-gray-800 shadow-sm bg-gray-950 z-10">
-    <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold"><span style="color: #4A45EE;">Atharv</span> Sharma</h1>
-      <nav class="space-x-4">
-        <a href="index.html" class="nav-link animate-slide-in hover:underline" style="color: #4A45EE;">Home</a>
-        <a href="projects.html" class="nav-link animate-slide-in hover:underline" style="color: #4A45EE;">Projects</a>
-        <a href="blog.html" class="nav-link animate-slide-in hover:underline" style="color: #4A45EE;">Blog</a>
-        <a href="contact.html" class="nav-link animate-slide-in font-semibold hover:underline" style="color: #4A45EE;">Contact</a>
-      </nav>
-    </div>
+
+<body>
+<div id="app">
+  <header>
+    <h1 id="title">Inbox</h1>
+    <button onclick="addTask()">＋</button>
   </header>
 
-  <!-- Hero Section -->
-  <section class="min-h-[90vh] flex flex-col justify-center pt-16 animate-fade-in">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="max-w-3xl">
-        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-          Hi, I'm <span style="color: #4A45EE;">Atharv Sharma</span>
-        </h1>
-        <p class="text-xl md:text-2xl text-gray-400 mb-8">
-          A passionate developer and designer creating beautiful digital experiences
-        </p>
-        <div class="flex flex-wrap gap-4">
-          <a href="projects.html" class="bg-[#4A45EE] text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-[#3A35CE] hover:scale-105 transition transform">
-            View My Work →
-          </a>
-          <a href="contact.html" class="border border-gray-700 px-6 py-3 rounded-lg text-lg font-medium hover:bg-gray-900 hover:scale-105 transition transform">
-            Get In Touch
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <div class="card">
+    <div class="section">Tasks</div>
+    <ul class="list" id="tasks"></ul>
+  </div>
+</div>
 
-  <!-- About Me Section -->
-  <section class="py-16 bg-gray-900 animate-fade-in">
-    <div class="max-w-5xl mx-auto px-4">
-      <h2 class="text-4xl font-bold mb-6">About Me</h2>
-      <div class="grid md:grid-cols-2 gap-12 items-center">
+<div class="tabbar">
+  <button onclick="setView('inbox')">Inbox</button>
+  <button onclick="setView('today')">Today</button>
+  <button onclick="setView('calendar')">Calendar</button>
+  <button onclick="setView('habits')">Habits</button>
+</div>
+
+<script>
+let view = "inbox";
+let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+let habits = JSON.parse(localStorage.getItem("habits") || "[]");
+
+const today = new Date().toISOString().slice(0,10);
+
+function save() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  localStorage.setItem("habits", JSON.stringify(habits));
+  render();
+}
+
+function setView(v) {
+  view = v;
+  document.getElementById("title").textContent =
+    v.charAt(0).toUpperCase() + v.slice(1);
+  render();
+}
+
+function addTask() {
+  const title = prompt("Task");
+  if (!title) return;
+
+  const due = prompt("Due date (YYYY-MM-DD)");
+  const cal = confirm("Add to Apple Calendar?");
+
+  const t = { id: Date.now(), title, due, cal };
+  tasks.push(t);
+  if (cal && due) exportICS(t);
+  save();
+}
+
+function completeTask(id, el) {
+  el.classList.add("done");
+  setTimeout(() => {
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+  }, 300);
+}
+
+function exportICS(task) {
+  const d = task.due.replace(/-/g,"");
+  const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${task.title}
+DTSTART:${d}
+DTEND:${d}
+END:VEVENT
+END:VCALENDAR`;
+  const blob = new Blob([ics], { type: "text/calendar" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = task.title + ".ics";
+  a.click();
+}
+
+function render() {
+  const ul = document.getElementById("tasks");
+  ul.innerHTML = "";
+
+  let filtered = tasks;
+  if (view === "today")
+    filtered = tasks.filter(t => t.due === today);
+
+  filtered.forEach(t => {
+    const li = document.createElement("li");
+    li.className = "item";
+    li.innerHTML = `
+      <div class="left">
+        <div class="check"></div>
         <div>
-          <h3 class="text-2xl font-semibold mb-4" style="color: #4A45EE;">I Build Digital Experiences That Matter</h3>
-          <p class="text-gray-300 mb-6 text-lg">
-            I'm a passionate developer with a strong foundation in Python, CSS, HTML, and JavaScript, specializing in Python and data science. I thrive on transforming complex data into actionable insights, leveraging Python's powerful libraries to build robust solutions. My expertise in web development allows me to create seamless, user-friendly interfaces, but my true focus lies in harnessing data to solve real-world problems. Whether it's crafting clean code or diving deep into data analysis, I'm driven by curiosity and a commitment to excellence.
-          </p>
-          <div class="space-y-4">
-            <div class="flex items-start">
-              <div class="flex-shrink-0 mt-1 mr-4 text-[#4A45EE]">
-                <ion-icon name="checkmark-circle" class="text-2xl"></ion-icon>
-              </div>
-              <div>
-                <h4 class="font-semibold text-lg">50+ Projects Completed</h4>
-                <p class="text-gray-400">From CLI tools to full-stack web applications</p>
-              </div>
-            </div>
-            <div class="flex items-start">
-              <div class="flex-shrink-0 mt-1 mr-4 text-[#4A45EE]">
-                <ion-icon name="checkmark-circle" class="text-2xl"></ion-icon>
-              </div>
-              <div>
-                <h4 class="font-semibold text-lg">Clean, Efficient Code</h4>
-                <p class="text-gray-400">My code is well-structured, documented, and optimized</p>
-              </div>
-            </div>
-            <div class="flex items-start">
-              <div class="flex-shrink-0 mt-1 mr-4 text-[#4A45EE]">
-                <ion-icon name="checkmark-circle" class="text-2xl"></ion-icon>
-              </div>
-              <div>
-                <h4 class="font-semibold text-lg">Quick Learner</h4>
-                <p class="text-gray-400">I master new technologies faster than most developers</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h4 class="text-xl font-semibold mb-4" style="color: #4A45EE;">My Skills</h4>
-          <div class="space-y-3">
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>Python</span>
-                <span>Advanced</span>
-              </div>
-              <div class="w-full bg-gray-700 rounded-full h-2.5">
-                <div class="bg-[#4A45EE] h-2.5 rounded-full" style="width: 90%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>NumPy</span>
-                <span>Advanced</span>
-              </div>
-              <div class="w-full bg-gray-700 rounded-full h-2.5">
-                <div class="bg-[#4A45EE] h-2.5 rounded-full" style="width: 80%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>Pandas</span>
-                <span>Intermediate</span>
-              </div>
-              <div class="w-full bg-gray-700 rounded-full h-2.5">
-                <div class="bg-[#4A45EE] h-2.5 rounded-full" style="width: 65%"></div>
-              </div>
-            </div>
-            <div>
-              <div class="flex justify-between mb-1">
-                <span>JavaScript</span>
-                <span>Advanced</span>
-              </div>
-              <div class="w-full bg-gray-700 rounded-full h-2.5">
-                <div class="bg-[#4A45EE] h-2.5 rounded-full" style="width: 80%"></div>
-              </div>
-            </div>
-          </div>
+          <div>${t.title}</div>
+          ${t.due ? `<div class="small">${t.due}</div>` : ""}
         </div>
       </div>
-    </div>
-  </section>
+    `;
+    li.onclick = () => completeTask(t.id, li);
+    ul.appendChild(li);
+  });
+}
 
-  <!-- Featured Projects Section -->
-  <section class="py-16 bg-gray-900 animate-fade-in">
-    <div class="max-w-5xl mx-auto px-4">
-      <h2 class="text-4xl font-bold mb-6">Featured Projects</h2>
-      <p class="text-gray-400 mb-8 text-lg">Some of my recent work that showcases my skills and expertise</p>
-      <div class="grid md:grid-cols-2 gap-8">
-        <div class="project-card p-6 border border-gray-800 rounded-lg bg-gray-900 hover:shadow-lg hover:scale-105 transition transform">
-          <div class="h-48 bg-gray-800 mb-4 rounded-lg overflow-hidden">
-            <img class="object-cover w-full h-full" src="src/Frontier.png" alt="Markowitz's Efficient Frontier">
-          </div>
-          <h3 class="text-2xl font-semibold mb-2">Markowitz's Efficient Frontier</h3>
-          <p class="text-gray-400 mb-4">A tool that generates optimized portfolio weights based on user-defined risk constraints.</p>
-          <div class="flex space-x-2 mb-4">
-            <span class="text-blue-400">Python</span>
-            <span class="text-blue-400">Pandas</span>
-            <span class="text-blue-400">Scipy</span>
-            <span class="text-blue-400">Yfinance</span>
-          </div>
-          <a href="projects/frontier.html" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">View Project</a>
-        </div>
-        <div class="project-card p-6 border border-gray-800 rounded-lg bg-gray-900 hover:shadow-lg hover:scale-105 transition transform">
-          <div class="h-48 bg-gray-800 mb-4 rounded-lg overflow-hidden">
-            <img class="object-cover w-full h-full" src="src/workoutimg.webp" alt="Personalised Workout Generator">
-          </div>
-          <h3 class="text-2xl font-semibold mb-2">Personalised Workout Generator</h3>
-          <p class="text-gray-400 mb-4">A Python CLI tool that generates personalized workout routines.</p>
-          <div class="flex space-x-2 mb-4">
-            <span class="text-blue-400">Python</span>
-            <span class="text-blue-400">CLI</span>
-            <span class="text-blue-400">Random</span>
-          </div>
-          <a href="projects/workout.html" class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800">View Project</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Latest Blog Posts Section -->
-  <section class="py-16 animate-fade-in">
-    <div class="max-w-5xl mx-auto px-4">
-      <h2 class="text-4xl font-bold mb-6">Latest Blog Posts</h2>
-      <p class="text-gray-400 mb-8 text-lg">Thoughts, tutorials, and insights from my experiences</p>
-      <div class="grid md:grid-cols-2 gap-8">
-        <div class="blog-card p-6 border border-gray-800 rounded-lg bg-gray-900 hover:shadow-lg hover:scale-105 transition transform">
-          <div class="blog-image-container w-full aspect-square mb-4 rounded-lg">
-            <img class="object-contain w-full h-full object-center bg-gray-800 p-4" src="src/Logo.png" alt="Python Basics Blog">
-          </div>
-          <p class="text-gray-400 text-sm mb-2">April 20, 2025</p>
-          <h3 class="text-2xl font-semibold mb-2">Basics of Python</h3>
-          <p class="text-gray-400 mb-4">Exploring the vast land Python!</p>
-          <a href="blogs/blog01_basics_py.html" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">Read Post</a>
-        </div>
-        <div class="blog-card p-6 border border-gray-800 rounded-lg bg-gray-900 hover:shadow-lg hover:scale-105 transition transform">
-          <div class="blog-image-container w-full aspect-square mb-4 rounded-lg">
-            <img class="object-contain w-full h-full object-center bg-gray-800 p-4" src="src/Logo.png" alt="Classes, Scopes, and Decorators Blog">
-          </div>
-          <p class="text-gray-400 text-sm mb-2">April 24, 2025</p>
-          <h3 class="text-2xl font-semibold mb-2">Classes, Scopes, and Decorators</h3>
-          <p class="text-gray-400 mb-4">Discovering advanced Python concepts like classes, scopes, and decorators.</p>
-          <a href="blogs/blog02_OOP_py.html" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">Read Post</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Let's Work Together Section -->
-  <section class="py-16 bg-gray-900 animate-fade-in">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-      <h2 class="text-4xl font-bold mb-4">Let's Work Together</h2>
-      <p class="text-gray-400 mb-6 text-lg">
-        Have a project in mind or just want to connect? I'm always open to discussing new opportunities and challenges.
-      </p>
-      <a href="contact.html" class="bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-800 hover:scale-105 transition transform">
-        Get In Touch
-      </a>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="bg-gray-950 py-6 border-t border-gray-800 opacity-0 pointer-events-none transition-opacity duration-500">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-400">
-      <div>
-        <h3 class="text-lg font-semibold mb-2">Atharv Sharma</h3>
-        <p class="text-sm">
-          A passionate developer focused on creating beautiful, functional, and user-centered digital experiences.
-        </p>
-        </div>
-      <div class="mt-4 md:mt-0">
-        <h4 class="text-lg font-semibold mb-2">Connect</h4>
-        <div class="flex space-x-4">
-          <a href="https://github.com/AtharvSharma09" class="social-link animate-slide-in text-gray-400 hover:text-[#4A45EE]"><ion-icon name="logo-github"></ion-icon></a>
-          <a href="#" class="social-link animate-slide-in text-gray-400 hover:text-[#4A45EE]"><ion-icon name="logo-linkedin"></ion-icon></a>
-          <a href="#" class="social-link animate-slide-in text-gray-400 hover:text-[#4A45EE]"><ion-icon name="logo-instagram"></ion-icon></a>
-        </div>
-      </div>
-    </div>
-    <div class="text-center text-gray-500 text-sm mt-4">
-      © 2025 Atharv Sharma. All rights reserved. | Designed and built with passion
-    </div>
-  </footer>
-
-  <script src="https://unpkg.com/ionicons@5.5.2/dist/ionicons.js"></script>
-  <script>
-    const footer = document.querySelector("footer");
-
-    function toggleFooter() {
-      if (window.scrollY > 100) {
-        footer.classList.remove("opacity-0", "pointer-events-none");
-      } else {
-        footer.classList.add("opacity-0", "pointer-events-none");
-      }
-    }
-
-    window.addEventListener("scroll", toggleFooter);
-    document.addEventListener("DOMContentLoaded", toggleFooter);
-  </script>
+render();
+</script>
 </body>
 </html>
