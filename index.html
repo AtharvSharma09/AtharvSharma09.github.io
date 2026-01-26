@@ -8,77 +8,72 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="icon" type="image/svg+xml" href="src/ticktick.svg">
+    <link rel="apple-touch-icon" href="src/ticktick.svg">
 
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
     <style>
         :root {
-            --bg: #030303; 
-            --panel: #0d0d0f; 
-            --glass: rgba(255, 255, 255, 0.03);
-            --divider: rgba(255, 255, 255, 0.08); 
-            --text: #ffffff;
-            --muted: #a1a1aa; 
-            --accent: #a78bfa; 
-            --success: #10b981; 
-            --danger: #f43f5e;
-            --font: 'Outfit', sans-serif;
+            --bg: #030303; --panel: #0d0d0f; --glass: rgba(255, 255, 255, 0.03);
+            --divider: rgba(255, 255, 255, 0.08); --text: #ffffff; --muted: #a1a1aa; 
+            --accent: #a78bfa; --danger: #f43f5e; --font: 'Outfit', sans-serif;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: var(--font); outline: none; }
+        
         body { 
             margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; 
             display: flex; flex-direction: column; 
             background-image: radial-gradient(circle at 50% -15%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
         }
 
-        #app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 24px 0; overflow: hidden; }
+        #app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px 0; overflow: hidden; width: 100%; }
 
-        header { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
-        .greeting { font-size: 14px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
-        .view-title { font-size: 38px; font-weight: 700; letter-spacing: -2px; margin: 0; color: #fff; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+        .greeting { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
+        .view-title { font-size: 32px; font-weight: 700; letter-spacing: -1.5px; margin: 0; color: #fff; }
 
-        .sync-badge { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); }
+        .sync-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); cursor: pointer; }
         .sync-badge.online { border-color: var(--accent); box-shadow: 0 0 10px rgba(167, 139, 250, 0.1); }
 
-        .nav-container { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        #spaceNav { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: none; }
+        .nav-container { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; width: 100%; }
+        #spaceNav { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         #spaceNav::-webkit-scrollbar { display: none; }
-        .space-tab { font-size: 16px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 12px 20px; border-radius: 16px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        
+        .space-tab { font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 10px 16px; border-radius: 14px; transition: 0.2s; display: flex; align-items: center; gap: 6px;}
         .space-tab.active { color: #fff; background: var(--glass); border: 1px solid var(--divider); }
 
-        .manage-trigger { width: 46px; height: 46px; border-radius: 14px; background: var(--glass); border: 1px solid var(--divider); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .manage-trigger.active { background: var(--danger); color: white; border-color: var(--danger); }
-
-        .view { display: none; flex: 1; overflow-y: auto; padding-bottom: 160px; }
+        .view { display: none; flex: 1; overflow-y: auto; padding-bottom: 140px; width: 100%; }
         .view.active { display: block; animation: viewIn 0.3s ease-out; }
-        @keyframes viewIn { from { opacity: 0; filter: blur(4px); transform: translateY(10px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+        @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .item-card { background: var(--panel); padding: 20px; border-radius: 22px; display: flex; align-items: center; gap: 18px; margin-bottom: 14px; border: 1px solid var(--divider); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .item-card:active { transform: scale(0.97); }
-        .circle { width: 24px; height: 24px; border: 2px solid var(--divider); border-radius: 8px; flex-shrink: 0; }
+        .item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; border: 1px solid var(--divider); }
+        .circle { width: 22px; height: 22px; border: 2px solid var(--divider); border-radius: 7px; flex-shrink: 0; }
+        .card-title { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.2; word-break: break-word; }
+        .card-meta { font-size: 13px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; }
+        
+        .label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; }
 
-        .card-title { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.3; }
-        .card-meta { font-size: 15px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; }
-        .label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(3, 3, 3, 0.85); backdrop-filter: blur(24px); display: flex; align-items: center; padding: 12px 0 calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); z-index: 1000; }
-        .tab-btn { color: var(--muted); font-size: 30px; flex: 1; text-align: center; }
+        .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(3, 3, 3, 0.95); backdrop-filter: blur(20px); display: flex; align-items: center; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); z-index: 1000; }
+        .tab-btn { color: var(--muted); font-size: 28px; flex: 1; text-align: center; }
         .tab-btn.active { color: var(--accent); }
-        .center-btn { background: var(--accent); color: white; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 5px solid var(--bg); transform: translateY(-28px); box-shadow: 0 12px 30px rgba(167, 139, 250, 0.4); }
+        .center-btn { background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 4px solid var(--bg); transform: translateY(-20px); box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3); }
 
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: flex-end; backdrop-filter: blur(12px); }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); }
         .modal.open { display: flex; }
-        .modal-content { background: #121214; width: 100%; border-radius: 36px 36px 0 0; padding: 32px; border-top: 1px solid var(--divider); }
-        input, select { width: 100%; padding: 18px; background: #000; border: 1px solid var(--divider); border-radius: 16px; color: white; margin-bottom: 14px; font-size: 16px; }
-        input:focus { border-color: var(--accent); }
+        .modal-content { background: #111113; width: 100%; max-width: 500px; border-radius: 30px 30px 0 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); }
+        
+        input, select { width: 100%; padding: 16px; background: #000; border: 1px solid var(--divider); border-radius: 14px; color: white; margin-bottom: 10px; font-size: 16px; -webkit-appearance: none; }
         input[type="date"], input[type="time"] { color-scheme: dark; }
 
-        .sub-header { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 12px; }
+        .sub-header { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+        .sub-header-row { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -90,18 +85,17 @@
             <h2 class="view-title" id="viewTitle">Vynix</h2>
         </div>
         <div id="syncBtn" class="sync-badge" onclick="handleAuthClick()">
-            <div id="syncDot" style="width:8px; height:8px; background:var(--muted); border-radius:50%"></div>
-            <small id="syncStatus" style="font-weight:700; font-size:12px">OFFLINE</small>
+            <div id="syncDot" style="width:6px; height:6px; background:var(--muted); border-radius:50%"></div>
+            <small id="syncStatus" style="font-weight:700; font-size:10px">OFFLINE</small>
         </div>
     </header>
 
     <div id="homeView" class="view active">
-        <div style="background: linear-gradient(135deg, var(--panel), #0a0a0c); padding: 26px; border-radius: 28px; border: 1px solid var(--divider); margin-bottom: 30px; position: relative; overflow: hidden;">
-            <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:var(--accent); filter:blur(50px); opacity:0.15"></div>
-            <h3 style="margin:0; font-size:19px; font-weight:600">Daily Trajectory</h3>
-            <p id="statsText" style="color:var(--muted); font-size:15px; margin: 8px 0 18px 0">Initializing objectives...</p>
-            <div style="height:8px; background:var(--divider); border-radius:10px; overflow:hidden">
-                <div id="progressBar" style="width:0%; height:100%; background:var(--accent); box-shadow: 0 0 10px var(--accent); transition: 1s cubic-bezier(0.4, 0, 0.2, 1)"></div>
+        <div style="background: var(--panel); padding: 20px; border-radius: 24px; border: 1px solid var(--divider); margin-bottom: 24px;">
+            <h3 style="margin:0; font-size:17px; font-weight:600">Daily Trajectory</h3>
+            <p id="statsText" style="color:var(--muted); font-size:14px; margin: 6px 0 14px 0">Processing...</p>
+            <div style="height:6px; background:var(--divider); border-radius:10px; overflow:hidden">
+                <div id="progressBar" style="width:0%; height:100%; background:var(--accent); transition: 0.8s ease"></div>
             </div>
         </div>
         <div id="homeContent"></div>
@@ -110,36 +104,38 @@
     <div id="spacesView" class="view">
         <div class="nav-container">
             <div id="spaceNav"></div>
-            <div class="manage-trigger" id="manageToggle" onclick="toggleEdit()">
+            <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--glass); border: 1px solid var(--divider); color: var(--muted); display: flex; align-items: center; justify-content: center;" onclick="toggleEdit()" id="manageToggle">
                 <ion-icon name="options-outline"></ion-icon>
             </div>
         </div>
         <div id="activeSpaceContent"></div>
-        <div style="margin-top: 45px; padding: 28px; background: var(--glass); border-radius: 28px; border: 1px solid var(--divider);">
-            <div class="sub-header-row" style="margin:0; display:flex; justify-content:space-between; align-items:center;">
-                <div class="sub-header">Tags & Labels</div>
-                <ion-icon name="add-circle-outline" style="color:var(--accent); font-size:28px" onclick="addLabel()"></ion-icon>
+        
+        <div style="margin-top: 40px; padding: 20px; background: var(--glass); border-radius: 20px; border: 1px solid var(--divider);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div class="sub-header" style="margin:0">Active Tags</div>
+                <ion-icon name="add-circle-outline" style="color:var(--accent); font-size:24px" onclick="addLabel()"></ion-icon>
             </div>
-            <div id="globalLabelList" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px"></div>
+            <div id="globalLabelList" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px"></div>
         </div>
     </div>
 </div>
 
 <div id="taskModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin:0 0 24px; font-size:24px; letter-spacing:-0.5px">New Objective</h3>
-        <input type="text" id="taskTitle" placeholder="What needs to be done?">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+        <h3 style="margin:0 0 20px; font-size:22px; letter-spacing:-0.5px">New Objective</h3>
+        <input type="text" id="taskTitle" placeholder="Describe objective...">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <select id="listSel" onchange="updateModalSelects()"></select>
-            <select id="labelSel"><option value="">Add Tag</option></select>
+            <select id="labelSel"><option value="">Tag</option></select>
         </div>
-        <select id="secSel"><option value="">In Main Space</option></select>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+        <select id="secSel"><option value="">Main Space</option></select>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <input type="date" id="taskDate">
             <input type="time" id="taskTime">
         </div>
-        <button id="submitBtn" onclick="submitTask()" style="width:100%; padding:22px; background:var(--accent); color:white; border:none; border-radius:20px; font-weight:700; font-size:18px; margin-top:10px">Commit to Vynix</button>
-        <button onclick="closeModal()" style="width:100%; padding:16px; background:none; color:var(--muted); border:none; font-size:16px; margin-top:5px">Dismiss</button>
+        <p style="font-size:11px; color:var(--muted); margin:0 0 10px 4px;">* Optional: GCal requires a date.</p>
+        <button id="submitBtn" onclick="submitTask()" style="width:100%; padding:18px; background:var(--accent); color:white; border:none; border-radius:16px; font-weight:700; font-size:16px">Commit</button>
+        <button onclick="closeModal()" style="width:100%; padding:14px; background:none; color:var(--muted); border:none; font-size:14px">Dismiss</button>
     </div>
 </div>
 
@@ -150,57 +146,65 @@
 </div>
 
 <script>
-/* --- STATE & STORAGE --- */
 let state = {
     tasks: JSON.parse(localStorage.getItem('vynix_tasks') || '[]'),
     lists: JSON.parse(localStorage.getItem('vynix_lists') || '[{"name":"Inbox","sections":[]}]'),
     globalLabels: JSON.parse(localStorage.getItem('vynix_global_labels') || '[]'),
     activeSpace: 'Inbox',
     isConnected: false,
-    editMode: false
+    editMode: false,
+    tokenClient: null
 };
 
 const CLIENT_ID = '632386705456-d9jus2f1eqa59f3bfe6ffv4iofglngh8.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
-/* --- GOOGLE SYNC --- */
-function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }).then(checkSession)); }
-function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, prompt: '', callback: handleAuth }); }
+function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }); checkSession(); }); }
+function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: handleAuth }); }
 function checkSession() {
-    const saved = localStorage.getItem('vynix_g_token');
-    if (saved) {
-        const token = JSON.parse(saved);
+    const savedToken = localStorage.getItem('vynix_g_token');
+    if (savedToken) {
+        const token = JSON.parse(savedToken);
         if (Date.now() < token.expires_at) { gapi.client.setToken(token); setOnline(true); syncAll(); }
     }
 }
 function handleAuth(resp) {
+    if (resp.error !== undefined) throw resp;
     resp.expires_at = Date.now() + (resp.expires_in * 1000);
     localStorage.setItem('vynix_g_token', JSON.stringify(resp));
-    gapi.client.setToken(resp);
-    setOnline(true);
-    syncAll();
+    gapi.client.setToken(resp); setOnline(true); syncAll();
 }
-function handleAuthClick() { state.tokenClient.requestAccessToken({prompt: 'select_account'}); }
+function handleAuthClick() { if (state.tokenClient) state.tokenClient.requestAccessToken({prompt: 'consent'}); }
 function setOnline(is) { 
     state.isConnected = is; 
     document.getElementById('syncBtn').classList.toggle('online', is);
     document.getElementById('syncDot').style.background = is ? 'var(--accent)' : 'var(--muted)';
     document.getElementById('syncStatus').innerText = is ? 'SYNCED' : 'OFFLINE';
 }
+
 async function syncAll() {
+    if (!state.isConnected) return;
     try {
-        const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString() });
-        res.result.items?.forEach(e => {
-            if(!state.tasks.some(t => t.gId === e.id)) {
-                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', label: '', gId: e.id });
-            }
-        });
-        save();
-    } catch(e) {}
+        const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true });
+        const events = res.result.items;
+        if (events) {
+            events.forEach(event => {
+                if(!state.tasks.some(t => t.gId === event.id)) {
+                    state.tasks.push({
+                        id: Date.now() + Math.random(),
+                        title: event.summary,
+                        date: (event.start.dateTime || event.start.date).split('T')[0],
+                        time: event.start.dateTime ? event.start.dateTime.split('T')[1].substring(0,5) : '',
+                        list: 'Inbox', section: '', label: '', gId: event.id
+                    });
+                }
+            });
+            save();
+        }
+    } catch(err) { console.error(err); }
 }
 
-/* --- CORE FUNCTIONS --- */
 function save() {
     localStorage.setItem('vynix_tasks', JSON.stringify(state.tasks));
     localStorage.setItem('vynix_lists', JSON.stringify(state.lists));
@@ -209,82 +213,62 @@ function save() {
 }
 
 function render() {
-    const hr = new Date().getHours();
-    document.getElementById('greetingText').innerText = hr < 12 ? "Morning Focus" : hr < 18 ? "Afternoon Flow" : "Evening Review";
-
-    // Date calculations
-    const now = new Date();
-    now.setHours(0,0,0,0);
+    const now = new Date(); now.setHours(0,0,0,0);
     const todayStr = now.toISOString().split('T')[0];
-    
-    const sevenDaysLater = new Date();
-    sevenDaysLater.setDate(now.getDate() + 7);
+    const sevenDaysLater = new Date(); sevenDaysLater.setDate(now.getDate() + 7);
 
-    // Grouping
     const todayTasks = state.tasks.filter(t => t.date === todayStr);
     const upcomingTasks = state.tasks.filter(t => {
+        if (!t.date) return false;
         const d = new Date(t.date);
         return d > now && d <= sevenDaysLater;
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const backlogTasks = state.tasks.filter(t => !t.date);
 
-    // Stats bar logic
     document.getElementById('statsText').innerText = todayTasks.length > 0 ? `${todayTasks.length} objectives today.` : "All systems clear.";
-    document.getElementById('progressBar').style.width = (todayTasks.length === 0 && upcomingTasks.length === 0) ? '100%' : todayTasks.length === 0 ? '70%' : '35%';
+    document.getElementById('progressBar').style.width = (todayTasks.length === 0 && upcomingTasks.length === 0) ? '100%' : todayTasks.length === 0 ? '60%' : '30%';
 
-    // Build Home View
     let homeHtml = "";
-    
-    if (todayTasks.length > 0) {
-        homeHtml += `<div class="sub-header">Focused Objectives (Today)</div>`;
-        homeHtml += todayTasks.map(t => cardHtml(t)).join('');
-    }
-
-    if (upcomingTasks.length > 0) {
-        homeHtml += `<div class="sub-header" style="margin-top:30px">Upcoming Trajectory (7 Days)</div>`;
-        homeHtml += upcomingTasks.map(t => cardHtml(t, true)).join('');
-    }
-
-    // Only show "Serenity" if literally nothing is planned for the next week
-    if (todayTasks.length === 0 && upcomingTasks.length === 0) {
-        homeHtml = `<p style="color:var(--muted); text-align:center; padding:60px 20px; font-size:16px; opacity:0.6">Pure serenity. ✨</p>`;
-    }
-
+    if (todayTasks.length > 0) homeHtml += `<div class="sub-header">Today</div>` + todayTasks.map(t => cardHtml(t)).join('');
+    if (upcomingTasks.length > 0) homeHtml += `<div class="sub-header" style="margin-top:24px">Next 7 Days</div>` + upcomingTasks.map(t => cardHtml(t, true)).join('');
+    if (backlogTasks.length > 0) homeHtml += `<div class="sub-header" style="margin-top:24px">Backlog</div>` + backlogTasks.map(t => cardHtml(t, true)).join('');
+    if (homeHtml === "") homeHtml = `<p style="color:var(--muted); text-align:center; padding:40px 0; font-size:14px; opacity:0.6">Pure serenity. ✨</p>`;
     document.getElementById('homeContent').innerHTML = homeHtml;
 
-    // Navigation and Spaces
     document.getElementById('spaceNav').innerHTML = state.lists.map(l => `
         <div class="space-tab ${state.activeSpace === l.name ? 'active' : ''}" onclick="setSpace('${l.name}')">
             ${l.name}
-            ${state.editMode && state.lists.length > 1 ? `<ion-icon name="trash-outline" style="color:var(--danger); font-size:18px; margin-left:8px" onclick="deleteSpace(event, '${l.name}')"></ion-icon>` : ''}
+            ${state.editMode && state.lists.length > 1 ? `<ion-icon name="trash-outline" style="color:var(--danger)" onclick="deleteSpace(event, '${l.name}')"></ion-icon>` : ''}
         </div>
     `).join('') + `<div class="space-tab" style="color:var(--accent)" onclick="addSpace()">+ New</div>`;
 
     document.getElementById('globalLabelList').innerHTML = state.globalLabels.map(lb => `
         <div class="label-chip">
-            ${lb} ${state.editMode ? `<ion-icon name="close" onclick="deleteLabel('${lb}')" style="color:var(--danger); margin-left:8px"></ion-icon>` : ''}
+            ${lb} ${state.editMode ? `<ion-icon name="close" onclick="deleteLabel('${lb}')" style="color:var(--danger); margin-left:6px"></ion-icon>` : ''}
         </div>
-    `).join('') || '<p style="font-size:14px; color:var(--muted)">No active tags.</p>';
+    `).join('') || '<p style="font-size:13px; color:var(--muted)">No tags defined.</p>';
 
-    const currentSpace = state.lists.find(l => l.name === state.activeSpace);
+    const currentList = state.lists.find(l => l.name === state.activeSpace);
     let spaceHtml = state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t, true)).join('');
-    currentSpace.sections.forEach(s => {
-        spaceHtml += `<div class="sub-header-row" style="margin-top:35px; display:flex; justify-content:space-between; align-items:center;"><div class="sub-header">${s}</div>${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger); font-size:22px" onclick="deleteSection('${s}')"></ion-icon>` : ''}</div>`;
+    currentList.sections.forEach(s => {
+        spaceHtml += `<div class="sub-header-row"><div class="sub-header">${s}</div>${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger); font-size:20px" onclick="deleteSection('${s}')"></ion-icon>` : ''}</div>`;
         spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, true)).join('');
     });
-    spaceHtml += `<button onclick="addSection()" style="margin-top:20px; background:var(--glass); border:1px dashed var(--divider); color:var(--muted); padding:20px; width:100%; border-radius:22px; font-size:16px; font-weight:600">+ Subsection</button>`;
+    spaceHtml += `<button onclick="addSection()" style="margin-top:20px; background:var(--glass); border:1px dashed var(--divider); color:var(--muted); padding:16px; width:100%; border-radius:18px; font-size:14px; font-weight:600">+ Subsection</button>`;
     document.getElementById('activeSpaceContent').innerHTML = spaceHtml;
 }
 
 function cardHtml(t, showDate=false) {
-    const dateStamp = showDate ? `<span style="color:var(--accent); font-weight:700; margin-right:8px">${t.date.split('-').slice(1).join('/')}</span>` : '';
+    const dTag = (showDate && t.date) ? `<span style="color:var(--accent); margin-right:6px">${t.date.split('-').slice(1).join('/')}</span>` : '';
+    const labelTag = t.label ? `<span class="label-chip" style="margin-left:8px; font-size:9px; padding:2px 6px">${t.label}</span>` : '';
     return `<div class="item-card" onclick="completeTask(${t.id})">
         <div class="circle"></div>
         <div style="flex:1">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span class="card-title">${t.title}</span>
-                ${t.label ? `<span class="label-chip" style="margin:0; padding:4px 10px; font-size:11px">${t.label}</span>` : ''}
+                ${labelTag}
             </div>
-            <div class="card-meta">${dateStamp}${t.time || 'All Day'}</div>
+            <div class="card-meta">${dTag}${t.time || ''}</div>
         </div>
     </div>`;
 }
@@ -292,26 +276,24 @@ function cardHtml(t, showDate=false) {
 async function completeTask(id) {
     const idx = state.tasks.findIndex(t => t.id === id);
     if(idx === -1) return;
-    const t = state.tasks[idx];
-    confetti({ particleCount: 40, spread: 60, origin: {y: 0.8}, colors:['#a78bfa', '#fff'] });
-    if(state.isConnected && t.gId) { try { await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: t.gId }); } catch(e) {} }
-    state.tasks.splice(idx, 1);
-    save();
+    const task = state.tasks[idx];
+    confetti({ particleCount: 30, spread: 50, origin: {y: 0.8}, colors:['#a78bfa'] });
+    if (state.isConnected && task.gId) { try { await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: task.gId }); } catch(e) {} }
+    state.tasks.splice(idx, 1); save();
 }
 
-/* --- MODAL ACTIONS --- */
 function openModal() { 
     document.getElementById('taskModal').classList.add('open'); 
     document.getElementById('listSel').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join(''); 
-    document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('taskDate').value = "";
+    document.getElementById('taskTitle').value = "";
     updateModalSelects(); 
 }
 function closeModal() { document.getElementById('taskModal').classList.remove('open'); }
-
 function updateModalSelects() {
     const list = state.lists.find(l => l.name === document.getElementById('listSel').value);
-    document.getElementById('secSel').innerHTML = '<option value="">Main Space</option>' + list.sections.map(s => `<option value="${s}">${s}</option>`).join('');
-    document.getElementById('labelSel').innerHTML = '<option value="">No Tag</option>' + state.globalLabels.map(lb => `<option value="${lb}">${lb}</option>`).join('');
+    document.getElementById('secSel').innerHTML = '<option value="">Main Space</option>' + (list?.sections || []).map(s => `<option value="${s}">${s}</option>`).join('');
+    document.getElementById('labelSel').innerHTML = '<option value="">Tag</option>' + state.globalLabels.map(lb => `<option value="${lb}">${lb}</option>`).join('');
 }
 
 async function submitTask() {
@@ -321,36 +303,27 @@ async function submitTask() {
     const list = document.getElementById('listSel').value;
     const section = document.getElementById('secSel').value;
     const label = document.getElementById('labelSel').value;
-
-    if(!title || !date) { alert("Objective and Date are required."); return; }
     
-    const btn = document.getElementById('submitBtn');
-    btn.innerText = "Syncing...";
-    btn.style.opacity = "0.7";
+    if(!title.trim()) return; // ONLY REQUIRE TITLE
 
-    const newTask = { id: Date.now(), title, date, time, list, section, label };
-
-    if(state.isConnected) {
+    let gId = null;
+    if (state.isConnected && date) {
         try {
-            const dateObj = new Date(`${date}T${time || '12:00'}`);
-            const offset = -dateObj.getTimezoneOffset();
-            const z = (n) => (n < 10 ? '0' : '') + n;
-            const iso = `${date}T${time || '12:00'}:00${offset >= 0 ? '+' : '-'}${z(Math.floor(Math.abs(offset)/60))}:${z(Math.abs(offset)%60)}`;
-            const r = await gapi.client.calendar.events.insert({ calendarId: 'primary', resource: { summary: title, start: { dateTime: iso }, end: { dateTime: iso } } });
-            newTask.gId = r.result.id;
-        } catch(e) { console.error("Sync Error", e); }
+            const startDateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
+            const res = await gapi.client.calendar.events.insert({
+                calendarId: 'primary',
+                resource: { summary: title, start: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }, end: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } }
+            });
+            gId = res.result.id;
+        } catch(e) { console.error(e); }
     }
 
-    state.tasks.push(newTask);
+    state.tasks.push({ id: Date.now(), title, date, time, list, section, label, gId });
     save();
-    btn.innerText = "Commit to Vynix";
-    btn.style.opacity = "1";
-    document.getElementById('taskTitle').value = '';
     closeModal();
 }
 
-/* --- SYSTEM ACTIONS --- */
-function toggleEdit() { state.editMode = !state.editMode; document.getElementById('manageToggle').classList.toggle('active', state.editMode); render(); }
+function toggleEdit() { state.editMode = !state.editMode; document.getElementById('manageToggle').style.background = state.editMode ? 'var(--danger)' : 'var(--glass)'; render(); }
 function setSpace(n) { state.activeSpace = n; render(); }
 function addSpace() { const n = prompt("Space Name:"); if(n) { state.lists.push({name:n, sections:[]}); state.activeSpace = n; save(); } }
 function deleteSpace(e, n) { e.stopPropagation(); if(confirm(`Erase "${n}"?`)) { state.lists = state.lists.filter(l => l.name !== n); state.tasks = state.tasks.filter(t => t.list !== n); state.activeSpace = state.lists[0].name; save(); } }
@@ -358,12 +331,11 @@ function addSection() { const s = prompt("Section Name:"); if(s) { state.lists.f
 function deleteSection(s) { if(confirm(`Remove "${s}"?`)) { const l = state.lists.find(x => x.name === state.activeSpace); l.sections = l.sections.filter(sec => sec !== s); state.tasks.filter(t => t.list === state.activeSpace && t.section === s).forEach(t => t.section = ''); save(); } }
 function addLabel() { const lb = prompt("Tag Name:"); if(lb) { state.globalLabels.push(lb); save(); } }
 function deleteLabel(lb) { if(confirm(`Delete tag "${lb}"?`)) { state.globalLabels = state.globalLabels.filter(x => x !== lb); state.tasks.filter(t => t.label === lb).forEach(t => t.label = ''); save(); } }
-
 function changeTab(v, el) { 
     document.querySelectorAll('.view, .tab-btn').forEach(n => n.classList.remove('active')); 
     document.getElementById(v+'View').classList.add('active'); 
     el.classList.add('active'); 
-    document.getElementById('viewTitle').innerText = v === 'home' ? 'Vynix' : 'Spaces'; 
+    document.getElementById('viewTitle').innerText = v === 'home' ? 'Vynix' : 'Spaces';
 }
 
 render();
