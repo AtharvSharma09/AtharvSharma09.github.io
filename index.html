@@ -23,6 +23,7 @@
             --bg: #030303; --panel: #0d0d0f; --glass: rgba(255, 255, 255, 0.03);
             --divider: rgba(255, 255, 255, 0.08); --text: #ffffff; --muted: #a1a1aa; 
             --accent: #a78bfa; --danger: #f43f5e; --font: 'Outfit', sans-serif;
+            --p1: #f43f5e; --p2: #fb923c; --p3: #38bdf8;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: var(--font); outline: none; }
@@ -53,8 +54,13 @@
         .view.active { display: block; animation: viewIn 0.3s ease-out; }
         @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; border: 1px solid var(--divider); }
+        .item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; border: 1px solid var(--divider); transition: transform 0.2s; }
+        .item-card:active { transform: scale(0.98); }
         .circle { width: 22px; height: 22px; border: 2px solid var(--divider); border-radius: 7px; flex-shrink: 0; }
+        .circle.p1 { border-color: var(--p1); box-shadow: inset 0 0 6px rgba(244, 63, 94, 0.2); }
+        .circle.p2 { border-color: var(--p2); }
+        .circle.p3 { border-color: var(--p3); }
+
         .card-title { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.2; word-break: break-word; }
         .card-meta { font-size: 13px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; }
         
@@ -128,6 +134,12 @@
             <select id="listSel" onchange="updateModalSelects()"></select>
             <select id="labelSel"><option value="">Tag</option></select>
         </div>
+        <select id="prioritySel">
+            <option value="0">Priority: None</option>
+            <option value="1" style="color:var(--p1)">High Priority</option>
+            <option value="2" style="color:var(--p2)">Medium Priority</option>
+            <option value="3" style="color:var(--p3)">Low Priority</option>
+        </select>
         <select id="secSel"><option value="">Main Space</option></select>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <input type="date" id="taskDate">
@@ -196,7 +208,7 @@ async function syncAll() {
                         title: event.summary,
                         date: (event.start.dateTime || event.start.date).split('T')[0],
                         time: event.start.dateTime ? event.start.dateTime.split('T')[1].substring(0,5) : '',
-                        list: 'Inbox', section: '', label: '', gId: event.id
+                        list: 'Inbox', section: '', label: '', priority: '0', gId: event.id
                     });
                 }
             });
@@ -212,18 +224,28 @@ function save() {
     render();
 }
 
+function taskSorter(a, b) {
+    // Sort by priority first (1, 2, 3, then 0)
+    const pA = a.priority === '0' ? 99 : parseInt(a.priority);
+    const pB = b.priority === '0' ? 99 : parseInt(b.priority);
+    if (pA !== pB) return pA - pB;
+    // Then by date
+    if (a.date !== b.date) return new Date(a.date || '9999-12-31') - new Date(b.date || '9999-12-31');
+    return 0;
+}
+
 function render() {
     const now = new Date(); now.setHours(0,0,0,0);
     const todayStr = now.toISOString().split('T')[0];
     const sevenDaysLater = new Date(); sevenDaysLater.setDate(now.getDate() + 7);
 
-    const todayTasks = state.tasks.filter(t => t.date === todayStr);
+    const todayTasks = state.tasks.filter(t => t.date === todayStr).sort(taskSorter);
     const upcomingTasks = state.tasks.filter(t => {
         if (!t.date) return false;
         const d = new Date(t.date);
         return d > now && d <= sevenDaysLater;
-    }).sort((a, b) => new Date(a.date) - new Date(b.date));
-    const backlogTasks = state.tasks.filter(t => !t.date);
+    }).sort(taskSorter);
+    const backlogTasks = state.tasks.filter(t => !t.date).sort(taskSorter);
 
     document.getElementById('statsText').innerText = todayTasks.length > 0 ? `${todayTasks.length} objectives today.` : "All systems clear.";
     document.getElementById('progressBar').style.width = (todayTasks.length === 0 && upcomingTasks.length === 0) ? '100%' : todayTasks.length === 0 ? '60%' : '30%';
@@ -249,10 +271,10 @@ function render() {
     `).join('') || '<p style="font-size:13px; color:var(--muted)">No tags defined.</p>';
 
     const currentList = state.lists.find(l => l.name === state.activeSpace);
-    let spaceHtml = state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t, true)).join('');
+    let spaceHtml = state.tasks.filter(t => t.list === state.activeSpace && !t.section).sort(taskSorter).map(t => cardHtml(t, true)).join('');
     currentList.sections.forEach(s => {
         spaceHtml += `<div class="sub-header-row"><div class="sub-header">${s}</div>${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger); font-size:20px" onclick="deleteSection('${s}')"></ion-icon>` : ''}</div>`;
-        spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, true)).join('');
+        spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).sort(taskSorter).map(t => cardHtml(t, true)).join('');
     });
     spaceHtml += `<button onclick="addSection()" style="margin-top:20px; background:var(--glass); border:1px dashed var(--divider); color:var(--muted); padding:16px; width:100%; border-radius:18px; font-size:14px; font-weight:600">+ Subsection</button>`;
     document.getElementById('activeSpaceContent').innerHTML = spaceHtml;
@@ -261,8 +283,10 @@ function render() {
 function cardHtml(t, showDate=false) {
     const dTag = (showDate && t.date) ? `<span style="color:var(--accent); margin-right:6px">${t.date.split('-').slice(1).join('/')}</span>` : '';
     const labelTag = t.label ? `<span class="label-chip" style="margin-left:8px; font-size:9px; padding:2px 6px">${t.label}</span>` : '';
+    const priorityClass = t.priority && t.priority !== '0' ? `p${t.priority}` : '';
+    
     return `<div class="item-card" onclick="completeTask(${t.id})">
-        <div class="circle"></div>
+        <div class="circle ${priorityClass}"></div>
         <div style="flex:1">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span class="card-title">${t.title}</span>
@@ -287,6 +311,7 @@ function openModal() {
     document.getElementById('listSel').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join(''); 
     document.getElementById('taskDate').value = "";
     document.getElementById('taskTitle').value = "";
+    document.getElementById('prioritySel').value = "0";
     updateModalSelects(); 
 }
 function closeModal() { document.getElementById('taskModal').classList.remove('open'); }
@@ -303,8 +328,9 @@ async function submitTask() {
     const list = document.getElementById('listSel').value;
     const section = document.getElementById('secSel').value;
     const label = document.getElementById('labelSel').value;
+    const priority = document.getElementById('prioritySel').value;
     
-    if(!title.trim()) return; // ONLY REQUIRE TITLE
+    if(!title.trim()) return;
 
     let gId = null;
     if (state.isConnected && date) {
@@ -312,13 +338,17 @@ async function submitTask() {
             const startDateTime = time ? `${date}T${time}:00` : `${date}T12:00:00`;
             const res = await gapi.client.calendar.events.insert({
                 calendarId: 'primary',
-                resource: { summary: title, start: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }, end: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } }
+                resource: { 
+                    summary: (priority === '1' ? '🔥 ' : '') + title, 
+                    start: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }, 
+                    end: { dateTime: startDateTime, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } 
+                }
             });
             gId = res.result.id;
         } catch(e) { console.error(e); }
     }
 
-    state.tasks.push({ id: Date.now(), title, date, time, list, section, label, gId });
+    state.tasks.push({ id: Date.now(), title, date, time, list, section, label, priority, gId });
     save();
     closeModal();
 }
@@ -341,4 +371,5 @@ function changeTab(v, el) {
 render();
 </script>
 </body>
+</html>
 </html>
