@@ -1,235 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Focus</title>
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Focus Pro v25 - Fix Complete</title>
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
 <style>
 :root {
-  --bg: #000;
-  --panel: #0a0a0a;
-  --card: #111;
-  --divider: #1c1c1e;
-  --text: #f2f2f7;
-  --muted: #8e8e93;
-  --accent: #7c7cff;
-  --accent2: #5eead4;
-  --danger: #ff453a;
-  --radius: 16px;
+  --bg: #000000; --panel: #1c1c1e; --divider: #2c2c2e; --text: #ffffff;
+  --muted: #8e8e93; --accent: #5e5ce6; --danger: #ff453a;
 }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+#app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px 0; overflow: hidden; }
 
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
+header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
+.view { display: none; flex: 1; overflow-y: auto; padding-bottom: 120px; }
+.view.active { display: block; }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro", system-ui, sans-serif;
-}
+/* LIST PROGRESS */
+.list-header-row { display: flex; justify-content: space-between; align-items: flex-end; margin: 25px 0 8px 5px; }
+.progress-track { width: 100%; height: 4px; background: var(--divider); border-radius: 2px; margin-bottom: 15px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
 
-#app {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: env(safe-area-inset-top) 16px 96px;
-}
+.time-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--accent); letter-spacing: 1.2px; }
+.sub-header { font-size: 10px; color: var(--muted); margin: 15px 0 8px 20px; text-transform: uppercase; }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-}
+.item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border: 1px solid var(--divider); cursor: pointer; active: scale(0.98); transition: 0.1s; }
+.indent { margin-left: 20px; width: calc(100% - 20px); }
+.circle { width: 24px; height: 24px; border: 2.5px solid var(--accent); border-radius: 50%; flex-shrink: 0; position: relative; }
 
-h1 {
-  font-size: 28px;
-  margin: 0;
-}
+/* CENTERED NAVIGATION */
+.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,15,15,0.95); display: flex; align-items: center; justify-content: space-around; padding: 10px 0 calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); backdrop-filter: blur(20px); z-index: 1000; }
+.tab-btn { color: var(--muted); font-size: 28px; flex: 1; text-align: center; }
+.tab-btn.active { color: var(--accent); }
+.center-btn { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 4px solid var(--bg); transform: translateY(-25px); box-shadow: 0 10px 20px rgba(94, 92, 230, 0.4); }
 
-button {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 22px;
-}
-
-.card {
-  background: var(--card);
-  border-radius: var(--radius);
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.section {
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px;
-  border-top: 1px solid var(--divider);
-  transition: transform .3s ease, opacity .3s ease;
-}
-
-.item.done {
-  opacity: 0;
-  transform: translateX(80px);
-}
-
-.left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.check {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--muted);
-}
-
-.check.done {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.small {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.tabbar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: var(--panel);
-  border-top: 1px solid var(--divider);
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0 env(safe-area-inset-bottom);
-}
+.modal-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: flex-end; backdrop-filter: blur(8px); }
+.modal-sheet.open { display: flex; }
+.modal-content { background: var(--panel); width: 100%; border-radius: 30px 30px 0 0; padding: 25px; max-height: 90vh; overflow-y: auto; }
 </style>
 </head>
-
 <body>
-<div id="app">
-  <header>
-    <h1 id="title">Inbox</h1>
-    <button onclick="addTask()">＋</button>
-  </header>
 
-  <div class="card">
-    <div class="section">Tasks</div>
-    <ul class="list" id="tasks"></ul>
-  </div>
+<div id="app">
+    <header>
+        <div>
+            <h2 id="headerTitle" style="margin:0">Home</h2>
+            <div onclick="handleAuthClick()" style="cursor:pointer; display:flex; align-items:center; gap:5px">
+                <small id="syncStatus" style="color:var(--muted)">Sync GCal</small>
+                <ion-icon name="sync-outline" style="font-size:12px; color:var(--muted)"></ion-icon>
+            </div>
+        </div>
+        <ion-icon name="list-outline" style="font-size:28px; color:var(--accent)" onclick="toggleSettings(true)"></ion-icon>
+    </header>
+
+    <div id="homeView" class="view active">
+        <div class="time-header" style="margin-left:5px">Today</div>
+        <div id="todayList"></div>
+        <div class="time-header" style="margin:25px 0 12px 5px">Upcoming</div>
+        <div id="upcomingList"></div>
+    </div>
+
+    <div id="tasksView" class="view">
+        <div id="masterTaskList"></div>
+    </div>
+</div>
+
+<div id="taskModal" class="modal-sheet">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h3 style="margin:0">New Task</h3>
+            <ion-icon name="close" style="font-size:24px" onclick="closeTaskModal()"></ion-icon>
+        </div>
+        <input type="text" id="taskTitle" placeholder="What's next?" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--divider); border-radius:12px; color:white; margin-bottom:15px">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
+            <select id="taskListSelect" onchange="updateSectionOptions()" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px"></select>
+            <select id="taskSectionSelect" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px"><option value="">None</option></select>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
+            <input type="date" id="taskDate" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px">
+            <input type="time" id="taskTime" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px">
+        </div>
+        <button onclick="submitTask()" style="width:100%; padding:18px; border-radius:15px; background:var(--accent); color:white; border:none; font-weight:bold">Create Task</button>
+    </div>
+</div>
+
+<div id="settingsPanel" class="modal-sheet">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
+            <h3 style="margin:0">Settings</h3>
+            <ion-icon name="close-circle" style="font-size:32px" onclick="toggleSettings(false)"></ion-icon>
+        </div>
+        <div id="listManager"></div>
+        <button onclick="addList()" style="width:100%; padding:16px; border-radius:14px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); font-weight:bold; margin-bottom:10px">+ Add List</button>
+        <button onclick="resetProgress()" style="width:100%; padding:12px; border:none; background:none; color:var(--danger); font-size:12px">Clear All Completed Statistics</button>
+    </div>
 </div>
 
 <div class="tabbar">
-  <button onclick="setView('inbox')">Inbox</button>
-  <button onclick="setView('today')">Today</button>
-  <button onclick="setView('calendar')">Calendar</button>
-  <button onclick="setView('habits')">Habits</button>
+    <div class="tab-btn active" onclick="tab('home', this)"><ion-icon name="home-outline"></ion-icon></div>
+    <div class="center-btn" onclick="openTaskModal()"><ion-icon name="add"></ion-icon></div>
+    <div class="tab-btn" onclick="tab('tasks', this)"><ion-icon name="layers-outline"></ion-icon></div>
 </div>
 
 <script>
-let view = "inbox";
-let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
-let habits = JSON.parse(localStorage.getItem("habits") || "[]");
+const CLIENT_ID = '632386705456-d9jus2f1eqa59f3bfe6ffv4iofglngh8.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
-const today = new Date().toISOString().slice(0,10);
+let state = {
+    tasks: JSON.parse(localStorage.getItem('fx_v25_tasks') || '[]'),
+    completedCount: JSON.parse(localStorage.getItem('fx_v25_comp') || '{}'),
+    lists: JSON.parse(localStorage.getItem('fx_v25_lists') || '[{"name":"Inbox", "sections":[]}]'),
+    isConnected: false
+};
+
+function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] })); }
+function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { if (resp.access_token) { gapi.client.setToken(resp); state.isConnected = true; syncAll(); } } }); }
+function handleAuthClick() { state.tokenClient.requestAccessToken({prompt: 'consent'}); }
+
+async function completeTask(id) {
+    const idx = state.tasks.findIndex(t => t.id === id);
+    if (idx === -1) return;
+    
+    const task = state.tasks[idx];
+    confetti({ particleCount: 30, spread: 50, origin: {y: 0.8}, colors:['#5e5ce6'] });
+
+    // 1. Optimistic UI update: Remove from state immediately
+    state.completedCount[task.list] = (state.completedCount[task.list] || 0) + 1;
+    const gIdToDelete = task.gId; // Store GCal ID
+    state.tasks.splice(idx, 1);
+    save(); // Re-renders the list so it disappears instantly
+
+    // 2. Background Deletion from Google
+    if (state.isConnected && gIdToDelete) {
+        try {
+            await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: gIdToDelete });
+        } catch(e) { console.warn("Background GCal delete failed, but task is removed locally."); }
+    }
+}
 
 function save() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-  localStorage.setItem("habits", JSON.stringify(habits));
-  render();
-}
-
-function setView(v) {
-  view = v;
-  document.getElementById("title").textContent =
-    v.charAt(0).toUpperCase() + v.slice(1);
-  render();
-}
-
-function addTask() {
-  const title = prompt("Task");
-  if (!title) return;
-
-  const due = prompt("Due date (YYYY-MM-DD)");
-  const cal = confirm("Add to Apple Calendar?");
-
-  const t = { id: Date.now(), title, due, cal };
-  tasks.push(t);
-  if (cal && due) exportICS(t);
-  save();
-}
-
-function completeTask(id, el) {
-  el.classList.add("done");
-  setTimeout(() => {
-    tasks = tasks.filter(t => t.id !== id);
-    save();
-  }, 300);
-}
-
-function exportICS(task) {
-  const d = task.due.replace(/-/g,"");
-  const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:${task.title}
-DTSTART:${d}
-DTEND:${d}
-END:VEVENT
-END:VCALENDAR`;
-  const blob = new Blob([ics], { type: "text/calendar" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = task.title + ".ics";
-  a.click();
+    localStorage.setItem('fx_v25_tasks', JSON.stringify(state.tasks));
+    localStorage.setItem('fx_v25_lists', JSON.stringify(state.lists));
+    localStorage.setItem('fx_v25_comp', JSON.stringify(state.completedCount));
+    render();
 }
 
 function render() {
-  const ul = document.getElementById("tasks");
-  ul.innerHTML = "";
+    const today = new Date().toISOString().split('T')[0];
+    
+    const todayHtml = state.tasks.filter(t => t.date === today).map(t => cardHtml(t)).join('');
+    document.getElementById('todayList').innerHTML = todayHtml || '<p style="color:var(--muted); font-size:13px; margin-left:10px">No tasks for today.</p>';
 
-  let filtered = tasks;
-  if (view === "today")
-    filtered = tasks.filter(t => t.due === today);
+    const upcomingHtml = state.tasks.filter(t => t.date > today).sort((a,b)=>a.date>b.date?1:-1).map(t => cardHtml(t, true)).join('');
+    document.getElementById('upcomingList').innerHTML = upcomingHtml || '<p style="color:var(--muted); font-size:13px; margin-left:10px">No upcoming tasks.</p>';
 
-  filtered.forEach(t => {
-    const li = document.createElement("li");
-    li.className = "item";
-    li.innerHTML = `
-      <div class="left">
-        <div class="check"></div>
-        <div>
-          <div>${t.title}</div>
-          ${t.due ? `<div class="small">${t.due}</div>` : ""}
-        </div>
-      </div>
-    `;
-    li.onclick = () => completeTask(t.id, li);
-    ul.appendChild(li);
-  });
+    let masterHtml = '';
+    state.lists.forEach(l => {
+        const active = state.tasks.filter(t => t.list === l.name).length;
+        const finished = state.completedCount[l.name] || 0;
+        const pct = (active + finished) > 0 ? (finished / (active + finished)) * 100 : 0;
+
+        masterHtml += `<div class="list-header-row"><div class="time-header">${l.name}</div><div style="font-size:10px; color:var(--muted)">${Math.round(pct)}%</div></div>
+                       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+        
+        masterHtml += state.tasks.filter(t => t.list === l.name && !t.section).map(t => cardHtml(t)).join('');
+        l.sections.forEach(s => {
+            masterHtml += `<div class="sub-header">└ ${s}</div>`;
+            masterHtml += state.tasks.filter(t => t.list === l.name && t.section === s).map(t => cardHtml(t, false, true)).join('');
+        });
+    });
+    document.getElementById('masterTaskList').innerHTML = masterHtml;
 }
+
+function cardHtml(t, showDate = false, isIndented = false) {
+    return `<div class="item-card ${isIndented ? 'indent' : ''}" onclick="completeTask(${t.id})">
+        <div class="circle"></div>
+        <div style="flex:1"><b>${t.title}</b><br><small style="color:var(--muted)">${showDate ? t.date + ' • ' : ''}${t.time || 'Anytime'}</small></div>
+    </div>`;
+}
+
+async function syncAll() {
+    try {
+        const resp = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString() });
+        (resp.result.items || []).forEach(e => {
+            if(!state.tasks.some(t => t.gId === e.id)) {
+                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', gId: e.id });
+            }
+        });
+        document.getElementById('syncStatus').innerText = "Synced";
+        save();
+    } catch (e) { document.getElementById('syncStatus').innerText = "GCal Error"; }
+}
+
+function resetProgress() { if(confirm("Reset all progress bars?")) { state.completedCount = {}; save(); } }
+function openTaskModal() { document.getElementById('taskModal').classList.add('open'); document.getElementById('taskListSelect').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join(''); document.getElementById('taskDate').value = new Date().toISOString().split('T')[0]; updateSectionOptions(); }
+function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
+function updateSectionOptions() { const ln = document.getElementById('taskListSelect').value; const list = state.lists.find(l => l.name === ln); document.getElementById('taskSectionSelect').innerHTML = '<option value="">None</option>' + (list?.sections.map(s => `<option value="${s}">${s}</option>`).join('') || ''); }
+
+async function submitTask() {
+    const title = document.getElementById('taskTitle').value;
+    const date = document.getElementById('taskDate').value;
+    const time = document.getElementById('taskTime').value;
+    if(!title || !date) return;
+    const newTask = { id: Date.now(), title, date, time, list: document.getElementById('taskListSelect').value, section: document.getElementById('taskSectionSelect').value };
+
+    if (state.isConnected) {
+        try {
+            const dateObj = new Date(`${date}T${time || '00:00'}`);
+            const offset = -dateObj.getTimezoneOffset();
+            const z = (n) => (n < 10 ? '0' : '') + n;
+            const sign = offset >= 0 ? '+' : '-';
+            const iso = `${date}T${time || '12:00'}:00${sign}${z(Math.floor(Math.abs(offset)/60))}:${z(Math.abs(offset)%60)}`;
+            const start = time ? { dateTime: iso } : { date: date };
+            const res = await gapi.client.calendar.events.insert({ calendarId: 'primary', resource: { summary: title, start, end: start } });
+            newTask.gId = res.result.id;
+        } catch(e) {}
+    }
+    state.tasks.push(newTask);
+    save();
+    closeTaskModal();
+    document.getElementById('taskTitle').value = '';
+}
+
+function toggleSettings(s) { document.getElementById('settingsPanel').classList.toggle('open', s); if(s) renderSettings(); }
+function renderSettings() {
+    document.getElementById('listManager').innerHTML = state.lists.map(l => `
+        <div style="background:var(--bg); border:1px solid var(--divider); padding:15px; border-radius:15px; margin-bottom:12px">
+            <div style="display:flex; justify-content:space-between; align-items:center"><b>${l.name}</b><ion-icon name="trash-outline" style="color:var(--danger)" onclick="deleteList('${l.name}')"></ion-icon></div>
+            <div style="margin-top:10px; display:flex; flex-wrap:wrap">
+                ${l.sections.map(s => `<div style="background:var(--panel); border:1px solid var(--divider); padding:6px 10px; border-radius:8px; display:flex; align-items:center; gap:5px; font-size:12px; margin:4px">${s} <ion-icon name="close" onclick="deleteSec('${l.name}','${s}')"></ion-icon></div>`).join('')}
+                <button onclick="addSec('${l.name}')" style="background:none; border:1px dashed var(--muted); color:var(--muted); border-radius:8px; padding:6px 10px; font-size:11px; margin:4px">+ Subsection</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function addList() { const n = prompt("List Name:"); if(n) { state.lists.push({name: n, sections: []}); save(); renderSettings(); } }
+function addSec(ln) { const s = prompt("Subsection Name:"); if(s) { state.lists.find(l => l.name === ln).sections.push(s); save(); renderSettings(); } }
+function deleteList(n) { if(n==='Inbox')return; if(confirm("Delete list?")) { state.lists = state.lists.filter(l => l.name !== n); save(); renderSettings(); } }
+function deleteSec(ln, s) { const l = state.lists.find(x => x.name === ln); l.sections = l.sections.filter(x => x !== s); save(); renderSettings(); }
+function tab(v, el) { document.querySelectorAll('.view, .tab-btn').forEach(n => n.classList.remove('active')); document.getElementById(v+'View').classList.add('active'); el.classList.add('active'); document.getElementById('headerTitle').innerText = v === 'home' ? 'Home' : 'Lists'; }
 
 render();
 </script>
