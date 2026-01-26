@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Focus Pro v25 - Fix Complete</title>
+<title>Focus Pro - Production</title>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
@@ -12,51 +12,57 @@
 <style>
 :root {
   --bg: #000000; --panel: #1c1c1e; --divider: #2c2c2e; --text: #ffffff;
-  --muted: #8e8e93; --accent: #5e5ce6; --danger: #ff453a;
+  --muted: #8e8e93; --accent: #5e5ce6; --danger: #ff453a; --success: #32d74b;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, sans-serif; }
 body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-#app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px 0; overflow: hidden; }
+#app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px 20px; overflow: hidden; }
 
+/* HEADER & SYNC */
 header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; }
-.view { display: none; flex: 1; overflow-y: auto; padding-bottom: 120px; }
+.sync-badge { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--panel); border-radius: 20px; border: 1px solid var(--divider); cursor: pointer; }
+.sync-badge.online { border-color: var(--accent); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: 0.3s; }
+.online .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+/* VIEWS */
+.view { display: none; flex: 1; overflow-y: auto; padding-bottom: 100px; }
 .view.active { display: block; }
 
-/* LIST PROGRESS */
+/* CARDS & PROGRESS */
 .list-header-row { display: flex; justify-content: space-between; align-items: flex-end; margin: 25px 0 8px 5px; }
 .progress-track { width: 100%; height: 4px; background: var(--divider); border-radius: 2px; margin-bottom: 15px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
-
 .time-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--accent); letter-spacing: 1.2px; }
 .sub-header { font-size: 10px; color: var(--muted); margin: 15px 0 8px 20px; text-transform: uppercase; }
 
-.item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border: 1px solid var(--divider); cursor: pointer; active: scale(0.98); transition: 0.1s; }
+.item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border: 1px solid var(--divider); transition: transform 0.1s; }
+.item-card:active { transform: scale(0.97); }
 .indent { margin-left: 20px; width: calc(100% - 20px); }
-.circle { width: 24px; height: 24px; border: 2.5px solid var(--accent); border-radius: 50%; flex-shrink: 0; position: relative; }
+.circle { width: 24px; height: 24px; border: 2.5px solid var(--accent); border-radius: 50%; flex-shrink: 0; }
 
-/* CENTERED NAVIGATION */
+/* NAVIGATION */
 .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,15,15,0.95); display: flex; align-items: center; justify-content: space-around; padding: 10px 0 calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); backdrop-filter: blur(20px); z-index: 1000; }
 .tab-btn { color: var(--muted); font-size: 28px; flex: 1; text-align: center; }
 .tab-btn.active { color: var(--accent); }
 .center-btn { background: var(--accent); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 4px solid var(--bg); transform: translateY(-25px); box-shadow: 0 10px 20px rgba(94, 92, 230, 0.4); }
 
+/* MODALS */
 .modal-sheet { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: flex-end; backdrop-filter: blur(8px); }
 .modal-sheet.open { display: flex; }
 .modal-content { background: var(--panel); width: 100%; border-radius: 30px 30px 0 0; padding: 25px; max-height: 90vh; overflow-y: auto; }
+input, select { width: 100%; padding: 14px; background: var(--bg); border: 1px solid var(--divider); border-radius: 12px; color: white; font-size: 16px; margin-bottom: 15px; }
 </style>
 </head>
 <body>
 
 <div id="app">
     <header>
-        <div>
-            <h2 id="headerTitle" style="margin:0">Home</h2>
-            <div onclick="handleAuthClick()" style="cursor:pointer; display:flex; align-items:center; gap:5px">
-                <small id="syncStatus" style="color:var(--muted)">Sync GCal</small>
-                <ion-icon name="sync-outline" style="font-size:12px; color:var(--muted)"></ion-icon>
-            </div>
+        <h2 id="headerTitle" style="margin:0">Home</h2>
+        <div id="syncBtn" class="sync-badge" onclick="handleAuthClick()">
+            <div class="dot"></div>
+            <small id="syncText">Sync GCal</small>
         </div>
-        <ion-icon name="list-outline" style="font-size:28px; color:var(--accent)" onclick="toggleSettings(true)"></ion-icon>
     </header>
 
     <div id="homeView" class="view active">
@@ -69,6 +75,10 @@ header { display: flex; justify-content: space-between; align-items: center; pad
     <div id="tasksView" class="view">
         <div id="masterTaskList"></div>
     </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="toggleSettings(true)" style="background:none; border:none; color:var(--muted); font-size: 12px; text-decoration: underline;">Manage Lists & Subsections</button>
+    </div>
 </div>
 
 <div id="taskModal" class="modal-sheet">
@@ -77,28 +87,25 @@ header { display: flex; justify-content: space-between; align-items: center; pad
             <h3 style="margin:0">New Task</h3>
             <ion-icon name="close" style="font-size:24px" onclick="closeTaskModal()"></ion-icon>
         </div>
-        <input type="text" id="taskTitle" placeholder="What's next?" style="width:100%; padding:14px; background:var(--bg); border:1px solid var(--divider); border-radius:12px; color:white; margin-bottom:15px">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
-            <select id="taskListSelect" onchange="updateSectionOptions()" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px"></select>
-            <select id="taskSectionSelect" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px"><option value="">None</option></select>
+        <input type="text" id="taskTitle" placeholder="What needs to be done?">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <select id="taskListSelect" onchange="updateSectionOptions()"></select>
+            <select id="taskSectionSelect"><option value="">Default (List)</option></select>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px">
-            <input type="date" id="taskDate" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px">
-            <input type="time" id="taskTime" style="padding:14px; background:var(--bg); border:1px solid var(--divider); color:white; border-radius:12px">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <input type="date" id="taskDate">
+            <input type="time" id="taskTime">
         </div>
-        <button onclick="submitTask()" style="width:100%; padding:18px; border-radius:15px; background:var(--accent); color:white; border:none; font-weight:bold">Create Task</button>
+        <button onclick="submitTask()" style="width:100%; padding:18px; border-radius:15px; background:var(--accent); color:white; border:none; font-weight:bold">Add Task</button>
     </div>
 </div>
 
 <div id="settingsPanel" class="modal-sheet">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-            <h3 style="margin:0">Settings</h3>
-            <ion-icon name="close-circle" style="font-size:32px" onclick="toggleSettings(false)"></ion-icon>
-        </div>
+        <h3>Lists & Subsections</h3>
         <div id="listManager"></div>
-        <button onclick="addList()" style="width:100%; padding:16px; border-radius:14px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); font-weight:bold; margin-bottom:10px">+ Add List</button>
-        <button onclick="resetProgress()" style="width:100%; padding:12px; border:none; background:none; color:var(--danger); font-size:12px">Clear All Completed Statistics</button>
+        <button onclick="addList()" style="width:100%; padding:16px; border-radius:14px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); font-weight:bold">+ New Main List</button>
+        <button onclick="toggleSettings(false)" style="width:100%; padding:14px; background:none; color:var(--muted); border:none; margin-top:10px">Close</button>
     </div>
 </div>
 
@@ -114,53 +121,80 @@ const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
 let state = {
-    tasks: JSON.parse(localStorage.getItem('fx_v25_tasks') || '[]'),
-    completedCount: JSON.parse(localStorage.getItem('fx_v25_comp') || '{}'),
-    lists: JSON.parse(localStorage.getItem('fx_v25_lists') || '[{"name":"Inbox", "sections":[]}]'),
+    tasks: JSON.parse(localStorage.getItem('fx_v28_tasks') || '[]'),
+    completedCount: JSON.parse(localStorage.getItem('fx_v28_comp') || '{}'),
+    lists: JSON.parse(localStorage.getItem('fx_v28_lists') || '[{"name":"Inbox", "sections":[]}]'),
     isConnected: false
 };
 
-function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] })); }
-function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (resp) => { if (resp.access_token) { gapi.client.setToken(resp); state.isConnected = true; syncAll(); } } }); }
-function handleAuthClick() { state.tokenClient.requestAccessToken({prompt: 'consent'}); }
-
-async function completeTask(id) {
-    const idx = state.tasks.findIndex(t => t.id === id);
-    if (idx === -1) return;
-    
-    const task = state.tasks[idx];
-    confetti({ particleCount: 30, spread: 50, origin: {y: 0.8}, colors:['#5e5ce6'] });
-
-    // 1. Optimistic UI update: Remove from state immediately
-    state.completedCount[task.list] = (state.completedCount[task.list] || 0) + 1;
-    const gIdToDelete = task.gId; // Store GCal ID
-    state.tasks.splice(idx, 1);
-    save(); // Re-renders the list so it disappears instantly
-
-    // 2. Background Deletion from Google
-    if (state.isConnected && gIdToDelete) {
-        try {
-            await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: gIdToDelete });
-        } catch(e) { console.warn("Background GCal delete failed, but task is removed locally."); }
-    }
+/* --- SYNC & AUTH LOGIC --- */
+function gapiLoaded() { 
+    gapi.load('client', async () => {
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] });
+        const savedToken = localStorage.getItem('google_token');
+        if (savedToken) {
+            const token = JSON.parse(savedToken);
+            if (Date.now() < token.expires_at) {
+                gapi.client.setToken(token);
+                state.isConnected = true;
+                updateSyncUI(true);
+                syncAll();
+            }
+        }
+    }); 
 }
 
+function gisLoaded() { 
+    state.tokenClient = google.accounts.oauth2.initTokenClient({ 
+        client_id: CLIENT_ID, scope: SCOPES, prompt: '',
+        callback: (resp) => { 
+            if (resp.access_token) { 
+                resp.expires_at = Date.now() + (resp.expires_in * 1000);
+                localStorage.setItem('google_token', JSON.stringify(resp));
+                gapi.client.setToken(resp); 
+                state.isConnected = true; 
+                updateSyncUI(true);
+                syncAll(); 
+            } 
+        } 
+    }); 
+}
+
+function handleAuthClick() { state.tokenClient.requestAccessToken({prompt: 'select_account'}); }
+
+function updateSyncUI(online) {
+    document.getElementById('syncBtn').classList.toggle('online', online);
+    document.getElementById('syncText').innerText = online ? "Connected" : "Sync GCal";
+}
+
+async function syncAll() {
+    try {
+        const resp = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString() });
+        (resp.result.items || []).forEach(e => {
+            if(!state.tasks.some(t => t.gId === e.id)) {
+                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', gId: e.id });
+            }
+        });
+        save();
+    } catch (e) { if(e.status === 401) updateSyncUI(false); }
+}
+
+/* --- CORE APP LOGIC --- */
 function save() {
-    localStorage.setItem('fx_v25_tasks', JSON.stringify(state.tasks));
-    localStorage.setItem('fx_v25_lists', JSON.stringify(state.lists));
-    localStorage.setItem('fx_v25_comp', JSON.stringify(state.completedCount));
+    localStorage.setItem('fx_v28_tasks', JSON.stringify(state.tasks));
+    localStorage.setItem('fx_v28_lists', JSON.stringify(state.lists));
+    localStorage.setItem('fx_v28_comp', JSON.stringify(state.completedCount));
     render();
 }
 
 function render() {
     const today = new Date().toISOString().split('T')[0];
     
-    const todayHtml = state.tasks.filter(t => t.date === today).map(t => cardHtml(t)).join('');
-    document.getElementById('todayList').innerHTML = todayHtml || '<p style="color:var(--muted); font-size:13px; margin-left:10px">No tasks for today.</p>';
+    // Home View
+    document.getElementById('todayList').innerHTML = state.tasks.filter(t => t.date === today).map(t => cardHtml(t)).join('') || '<p style="color:var(--muted); font-size:13px">All caught up!</p>';
+    document.getElementById('upcomingList').innerHTML = state.tasks.filter(t => t.date > today).sort((a,b)=>a.date>b.date?1:-1).map(t => cardHtml(t, true)).join('') || '<p style="color:var(--muted); font-size:13px">No future tasks.</p>';
 
-    const upcomingHtml = state.tasks.filter(t => t.date > today).sort((a,b)=>a.date>b.date?1:-1).map(t => cardHtml(t, true)).join('');
-    document.getElementById('upcomingList').innerHTML = upcomingHtml || '<p style="color:var(--muted); font-size:13px; margin-left:10px">No upcoming tasks.</p>';
-
+    // Lists View
     let masterHtml = '';
     state.lists.forEach(l => {
         const active = state.tasks.filter(t => t.list === l.name).length;
@@ -186,34 +220,45 @@ function cardHtml(t, showDate = false, isIndented = false) {
     </div>`;
 }
 
-async function syncAll() {
-    try {
-        const resp = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString() });
-        (resp.result.items || []).forEach(e => {
-            if(!state.tasks.some(t => t.gId === e.id)) {
-                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', gId: e.id });
-            }
-        });
-        document.getElementById('syncStatus').innerText = "Synced";
-        save();
-    } catch (e) { document.getElementById('syncStatus').innerText = "GCal Error"; }
+async function completeTask(id) {
+    const idx = state.tasks.findIndex(t => t.id === id);
+    const task = state.tasks[idx];
+    state.completedCount[task.list] = (state.completedCount[task.list] || 0) + 1;
+    const gId = task.gId;
+    state.tasks.splice(idx, 1);
+    confetti({ particleCount: 30, spread: 50, origin: {y: 0.8}, colors:['#5e5ce6'] });
+    save();
+
+    if (state.isConnected && gId) {
+        try { await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: gId }); } catch(e) {}
+    }
 }
 
-function resetProgress() { if(confirm("Reset all progress bars?")) { state.completedCount = {}; save(); } }
-function openTaskModal() { document.getElementById('taskModal').classList.add('open'); document.getElementById('taskListSelect').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join(''); document.getElementById('taskDate').value = new Date().toISOString().split('T')[0]; updateSectionOptions(); }
+/* --- MODALS & SETTINGS --- */
+function openTaskModal() { 
+    document.getElementById('taskModal').classList.add('open'); 
+    document.getElementById('taskListSelect').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
+    document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+    updateSectionOptions();
+}
 function closeTaskModal() { document.getElementById('taskModal').classList.remove('open'); }
-function updateSectionOptions() { const ln = document.getElementById('taskListSelect').value; const list = state.lists.find(l => l.name === ln); document.getElementById('taskSectionSelect').innerHTML = '<option value="">None</option>' + (list?.sections.map(s => `<option value="${s}">${s}</option>`).join('') || ''); }
+function updateSectionOptions() {
+    const ln = document.getElementById('taskListSelect').value;
+    const list = state.lists.find(l => l.name === ln);
+    document.getElementById('taskSectionSelect').innerHTML = '<option value="">Default (List)</option>' + (list?.sections.map(s => `<option value="${s}">${s}</option>`).join('') || '');
+}
 
 async function submitTask() {
     const title = document.getElementById('taskTitle').value;
     const date = document.getElementById('taskDate').value;
     const time = document.getElementById('taskTime').value;
     if(!title || !date) return;
+    
     const newTask = { id: Date.now(), title, date, time, list: document.getElementById('taskListSelect').value, section: document.getElementById('taskSectionSelect').value };
 
     if (state.isConnected) {
         try {
-            const dateObj = new Date(`${date}T${time || '00:00'}`);
+            const dateObj = new Date(`${date}T${time || '12:00'}`);
             const offset = -dateObj.getTimezoneOffset();
             const z = (n) => (n < 10 ? '0' : '') + n;
             const sign = offset >= 0 ? '+' : '-';
