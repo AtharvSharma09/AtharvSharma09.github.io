@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Focus Pro v30</title>
+<title>Focus Pro v32</title>
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
@@ -12,44 +12,64 @@
 <style>
 :root {
   --bg: #000000; --panel: #1c1c1e; --divider: #2c2c2e; --text: #ffffff;
-  --muted: #8e8e93; --accent: #5e5ce6; --success: #32d74b;
+  --muted: #8e8e93; --accent: #5e5ce6; --success: #32d74b; --danger: #ff453a;
+  --warning: #ff9f0a; --info: #64d2ff;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: -apple-system, sans-serif; }
 body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 #app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 20px 0; overflow: hidden; }
 
+/* HEADER & SYNC */
 header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
-.sync-badge { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--panel); border-radius: 20px; border: 1px solid var(--divider); }
-.online .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.sync-badge { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--panel); border-radius: 20px; border: 1px solid var(--divider); cursor: pointer; }
+.sync-badge.online { border-color: var(--accent); }
 .dot { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; }
+.online .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
 
-/* SPACE NAVIGATION (TOP) */
-#spaceNav { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; border-bottom: 1px solid var(--divider); margin-bottom: 15px; }
+/* SPACE NAV & EDITING */
+.nav-container { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--divider); }
+#spaceNav { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; flex: 1; }
 #spaceNav::-webkit-scrollbar { display: none; }
-.space-tab { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 8px 16px; border-radius: 20px; transition: 0.2s; }
+.space-tab { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 8px 16px; border-radius: 20px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
 .space-tab.active { color: #fff; background: var(--accent); }
+.manage-btn { font-size: 20px; color: var(--muted); cursor: pointer; }
+.manage-btn.active { color: var(--danger); }
 
-/* VIEWS */
+/* TASK CARDS & PRIORITY */
 .view { display: none; flex: 1; overflow-y: auto; padding-bottom: 120px; }
 .view.active { display: block; }
-
-/* TASK CARDS */
-.item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border: 1px solid var(--divider); }
+.item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border: 1px solid var(--divider); position: relative; }
 .indent { margin-left: 20px; width: calc(100% - 20px); border-left: 2px solid var(--divider); border-radius: 0 18px 18px 0; }
 .circle { width: 22px; height: 22px; border: 2px solid var(--accent); border-radius: 50%; flex-shrink: 0; }
-.sub-header { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 20px 0 10px 5px; }
 
-/* BOTTOM TABBAR */
-.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,15,15,0.9); display: flex; align-items: center; padding: 10px 0 calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); backdrop-filter: blur(20px); }
+/* Priority Left Borders */
+.prio-high { border-left: 5px solid var(--danger); }
+.prio-med { border-left: 5px solid var(--warning); }
+.prio-low { border-left: 5px solid var(--info); }
+
+/* LABEL CHIPS */
+.label-chip { font-size: 10px; padding: 2px 8px; border-radius: 8px; background: var(--divider); color: var(--muted); border: 0.5px solid var(--muted); margin-top: 4px; display: inline-block; }
+.sub-header-row { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 10px 5px; }
+.sub-header { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+
+/* MODALS */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: flex-end; backdrop-filter: blur(8px); }
+.modal.open { display: flex; }
+.modal-content { background: var(--panel); width: 100%; border-radius: 25px 25px 0 0; padding: 25px; max-height: 90vh; overflow-y: auto; }
+input, select { width: 100%; padding: 14px; background: var(--bg); border: 1px solid var(--divider); border-radius: 12px; color: white; margin-bottom: 12px; font-size: 16px; }
+
+/* PRIORITY SELECTOR */
+.prio-group { display: flex; gap: 8px; margin-bottom: 15px; }
+.prio-pill { flex: 1; padding: 10px; text-align: center; border-radius: 10px; border: 1px solid var(--divider); font-size: 12px; color: var(--muted); cursor: pointer; }
+.prio-pill.active-high { background: var(--danger); color: white; border-color: var(--danger); }
+.prio-pill.active-med { background: var(--warning); color: white; border-color: var(--warning); }
+.prio-pill.active-low { background: var(--info); color: white; border-color: var(--info); }
+
+/* TABBAR */
+.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15,15,15,0.95); display: flex; align-items: center; padding: 10px 0 calc(15px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); backdrop-filter: blur(20px); z-index: 1000; }
 .tab-btn { color: var(--muted); font-size: 26px; flex: 1; text-align: center; }
 .tab-btn.active { color: var(--accent); }
 .center-btn { background: var(--accent); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 4px solid var(--bg); transform: translateY(-20px); }
-
-/* MODALS */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: flex-end; }
-.modal.open { display: flex; }
-.modal-content { background: var(--panel); width: 100%; border-radius: 25px 25px 0 0; padding: 25px; }
-input, select { width: 100%; padding: 14px; background: var(--bg); border: 1px solid var(--divider); border-radius: 12px; color: white; margin-bottom: 12px; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -57,16 +77,19 @@ input, select { width: 100%; padding: 14px; background: var(--bg); border: 1px s
 <div id="app">
     <header>
         <h2 id="viewTitle">Focus</h2>
-        <div id="syncBtn" class="sync-badge" onclick="handleAuthClick()"><div class="dot"></div><small>Sync</small></div>
+        <div id="syncBtn" class="sync-badge" onclick="handleAuthClick()"><div class="dot"></div><small id="syncStatus">Sync</small></div>
     </header>
 
     <div id="homeView" class="view active">
-        <div class="sub-header">Today</div>
-        <div id="todayTasks"></div>
+        <div class="sub-header" style="margin-left:5px">Today</div>
+        <div id="todayTasks" style="margin-top:10px"></div>
     </div>
 
     <div id="spacesView" class="view">
-        <div id="spaceNav"></div>
+        <div class="nav-container">
+            <div id="spaceNav"></div>
+            <ion-icon name="options-outline" id="manageToggle" class="manage-btn" onclick="toggleEdit()"></ion-icon>
+        </div>
         <div id="activeSpaceContent"></div>
     </div>
 </div>
@@ -74,17 +97,27 @@ input, select { width: 100%; padding: 14px; background: var(--bg); border: 1px s
 <div id="taskModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0">New Task</h3>
-        <input type="text" id="taskTitle" placeholder="Task summary">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
-            <select id="listSel" onchange="updateSecSel()"></select>
-            <select id="secSel"><option value="">No Subsection</option></select>
+        <input type="text" id="taskTitle" placeholder="Task Name">
+        
+        <div class="prio-group">
+            <div class="prio-pill" id="p-low" onclick="setPrio('low')">Low</div>
+            <div class="prio-pill" id="p-med" onclick="setPrio('med')">Med</div>
+            <div class="prio-pill" id="p-high" onclick="setPrio('high')">High</div>
         </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+            <select id="listSel" onchange="updateModalSelects()"></select>
+            <select id="labelSel"><option value="">No Label</option></select>
+        </div>
+        <select id="secSel"><option value="">Main Space</option></select>
+        
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
             <input type="date" id="taskDate">
             <input type="time" id="taskTime">
         </div>
+        
         <button onclick="submitTask()" style="width:100%; padding:16px; background:var(--accent); color:white; border:none; border-radius:12px; font-weight:bold">Create Task</button>
-        <button onclick="closeModal()" style="width:100%; padding:12px; background:none; color:var(--muted); border:none">Dismiss</button>
+        <button onclick="closeModal()" style="width:100%; padding:12px; background:none; color:var(--muted); border:none; width:100%">Cancel</button>
     </div>
 </div>
 
@@ -100,24 +133,27 @@ const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
 let state = {
-    tasks: JSON.parse(localStorage.getItem('fx_v30_tasks') || '[]'),
-    lists: JSON.parse(localStorage.getItem('fx_v30_lists') || '[{"name":"Inbox","sections":[]},{"name":"Work","sections":[]}]'),
+    tasks: JSON.parse(localStorage.getItem('fx_v32_tasks') || '[]'),
+    lists: JSON.parse(localStorage.getItem('fx_v32_lists') || '[{"name":"Inbox","sections":[],"labels":[]}]'),
     activeSpace: 'Inbox',
-    isConnected: false
+    isConnected: false,
+    editMode: false,
+    selectedPrio: 'none'
 };
 
-/* --- GOOGLE SYNC --- */
-function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }).then(checkSavedAuth)); }
-function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: (r) => handleAuth(r) }); }
+/* --- SYNC ENGINE --- */
+function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }).then(checkSession)); }
+function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, prompt: '', callback: handleAuth }); }
 
-function checkSavedAuth() {
-    const saved = localStorage.getItem('g_token_v30');
+function checkSession() {
+    const saved = localStorage.getItem('g_token_v32');
     if (saved) {
         const token = JSON.parse(saved);
         if (Date.now() < token.expires_at) {
             gapi.client.setToken(token);
             state.isConnected = true;
             document.getElementById('syncBtn').classList.add('online');
+            document.getElementById('syncStatus').innerText = "Active";
             syncAll();
         }
     }
@@ -125,10 +161,11 @@ function checkSavedAuth() {
 
 function handleAuth(resp) {
     resp.expires_at = Date.now() + (resp.expires_in * 1000);
-    localStorage.setItem('g_token_v30', JSON.stringify(resp));
+    localStorage.setItem('g_token_v32', JSON.stringify(resp));
     gapi.client.setToken(resp);
     state.isConnected = true;
     document.getElementById('syncBtn').classList.add('online');
+    document.getElementById('syncStatus').innerText = "Active";
     syncAll();
 }
 
@@ -139,55 +176,79 @@ async function syncAll() {
         const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString() });
         res.result.items?.forEach(e => {
             if(!state.tasks.some(t => t.gId === e.id)) {
-                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', gId: e.id });
+                state.tasks.push({ id: Date.now()+Math.random(), title: e.summary, date: (e.start.dateTime || e.start.date).split('T')[0], list: 'Inbox', section: '', label: '', prio: 'none', gId: e.id });
             }
         });
         save();
     } catch(e) {}
 }
 
-/* --- UI LOGIC --- */
+/* --- CORE APP --- */
 function save() {
-    localStorage.setItem('fx_v30_tasks', JSON.stringify(state.tasks));
-    localStorage.setItem('fx_v30_lists', JSON.stringify(state.lists));
+    localStorage.setItem('fx_v32_tasks', JSON.stringify(state.tasks));
+    localStorage.setItem('fx_v32_lists', JSON.stringify(state.lists));
     render();
 }
 
 function render() {
     const today = new Date().toISOString().split('T')[0];
     
-    // Render Home View
-    document.getElementById('todayTasks').innerHTML = state.tasks.filter(t => t.date === today).map(t => cardHtml(t)).join('') || '<p style="color:var(--muted)">All clear!</p>';
+    // 1. Home View
+    document.getElementById('todayTasks').innerHTML = state.tasks
+        .filter(t => t.date === today)
+        .sort((a,b) => (a.prio==='high'?-1:1))
+        .map(t => cardHtml(t)).join('') || '<p style="color:var(--muted)">No tasks today.</p>';
 
-    // Render Space Nav
+    // 2. Space Navigation
     document.getElementById('spaceNav').innerHTML = state.lists.map(l => `
-        <div class="space-tab ${state.activeSpace === l.name ? 'active' : ''}" onclick="setSpace('${l.name}')">${l.name}</div>
+        <div class="space-tab ${state.activeSpace === l.name ? 'active' : ''}" onclick="setSpace('${l.name}')">
+            ${l.name}
+            ${state.editMode && state.lists.length > 1 ? `<ion-icon name="trash-outline" style="color:var(--danger);margin-left:5px" onclick="deleteSpace(event, '${l.name}')"></ion-icon>` : ''}
+        </div>
     `).join('') + `<div class="space-tab" onclick="addSpace()">+ New</div>`;
 
-    // Render Active Space Content
+    // 3. Space Content
     const list = state.lists.find(l => l.name === state.activeSpace);
-    let spaceHtml = '';
-    
-    // Tasks directly in list
-    spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t)).join('');
-    
-    // Tasks in subsections
-    list?.sections.forEach(s => {
-        spaceHtml += `<div class="sub-header">${s}</div>`;
-        spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, false, true)).join('');
+    let html = `
+        <div class="sub-header-row">
+            <div class="sub-header">Labels</div>
+            <ion-icon name="add-circle-outline" style="color:var(--accent)" onclick="addLabel()"></ion-icon>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px">
+            ${(list.labels || []).map(lb => `
+                <div class="label-chip">${lb} ${state.editMode ? `<ion-icon name="close" onclick="deleteLabel('${lb}')" style="vertical-align:middle"></ion-icon>` : ''}</div>
+            `).join('')}
+        </div>
+    `;
+
+    // Tasks in Main Space
+    html += state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t)).join('');
+
+    // Tasks in Subsections
+    list.sections.forEach(s => {
+        html += `
+            <div class="sub-header-row">
+                <div class="sub-header">${s}</div>
+                ${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger)" onclick="deleteSection('${s}')"></ion-icon>` : ''}
+            </div>
+        `;
+        html += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, false, true)).join('');
     });
-    
-    spaceHtml += `<button onclick="addSection()" style="margin-top:20px; background:none; border:1px dashed var(--muted); color:var(--muted); padding:10px; width:100%; border-radius:10px">+ Add Subsection</button>`;
-    
-    document.getElementById('activeSpaceContent').innerHTML = spaceHtml;
+
+    html += `<button onclick="addSection()" style="margin-top:20px; background:none; border:1px dashed var(--divider); color:var(--muted); padding:12px; width:100%; border-radius:12px">+ Subsection</button>`;
+    document.getElementById('activeSpaceContent').innerHTML = html;
 }
 
 function cardHtml(t, showDate=false, indent=false) {
+    const pClass = t.prio !== 'none' ? `prio-${t.prio}` : '';
     return `
-        <div class="item-card ${indent ? 'indent' : ''}" onclick="completeTask(${t.id})">
+        <div class="item-card ${indent ? 'indent' : ''} ${pClass}" onclick="completeTask(${t.id})">
             <div class="circle"></div>
-            <div>
-                <b>${t.title}</b><br>
+            <div style="flex:1">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                    <b>${t.title}</b>
+                    ${t.label ? `<span class="label-chip" style="margin:0">${t.label}</span>` : ''}
+                </div>
                 <small style="color:var(--muted)">${t.time || 'All Day'}</small>
             </div>
         </div>
@@ -197,28 +258,35 @@ function cardHtml(t, showDate=false, indent=false) {
 async function completeTask(id) {
     const idx = state.tasks.findIndex(t => t.id === id);
     const t = state.tasks[idx];
-    confetti({ particleCount: 30, spread: 60, origin: {y: 0.8} });
+    confetti({ particleCount: 30, spread: 50, origin: {y: 0.8} });
     if(state.isConnected && t.gId) { try { await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: t.gId }); } catch(e) {} }
     state.tasks.splice(idx, 1);
     save();
 }
 
-/* --- SPACE MANAGEMENT --- */
-function setSpace(name) { state.activeSpace = name; render(); }
-function addSpace() { const n = prompt("Space Name:"); if(n) { state.lists.push({name:n, sections:[]}); state.activeSpace = n; save(); } }
-function addSection() { const s = prompt("Subsection Name:"); if(s) { state.lists.find(l => l.name === state.activeSpace).sections.push(s); save(); } }
+/* --- MANAGEMENT --- */
+function toggleEdit() { state.editMode = !state.editMode; document.getElementById('manageToggle').classList.toggle('active', state.editMode); render(); }
+function setSpace(n) { state.activeSpace = n; render(); }
+function addSpace() { const n = prompt("Space Name:"); if(n) { state.lists.push({name:n, sections:[], labels:[]}); state.activeSpace = n; save(); } }
+function deleteSpace(e, n) { e.stopPropagation(); if(confirm(`Delete "${n}"?`)) { state.lists = state.lists.filter(l => l.name !== n); state.tasks = state.tasks.filter(t => t.list !== n); state.activeSpace = state.lists[0].name; save(); } }
+function addSection() { const s = prompt("Section Name:"); if(s) { state.lists.find(l => l.name === state.activeSpace).sections.push(s); save(); } }
+function deleteSection(s) { if(confirm(`Delete section "${s}"?`)) { const l = state.lists.find(x => x.name === state.activeSpace); l.sections = l.sections.filter(sec => sec !== s); state.tasks.filter(t => t.list === state.activeSpace && t.section === s).forEach(t => t.section = ''); save(); } }
+function addLabel() { const lb = prompt("Label Name:"); if(lb) { const l = state.lists.find(x => x.name === state.activeSpace); if(!l.labels) l.labels = []; l.labels.push(lb); save(); } }
+function deleteLabel(lb) { const l = state.lists.find(x => x.name === state.activeSpace); l.labels = l.labels.filter(x => x !== lb); state.tasks.filter(t => t.list === state.activeSpace && t.label === lb).forEach(t => t.label = ''); save(); }
 
-/* --- MODAL --- */
-function openModal() {
-    document.getElementById('taskModal').classList.add('open');
+/* --- TASK CREATION --- */
+function setPrio(p) { state.selectedPrio = p; document.querySelectorAll('.prio-pill').forEach(el => el.className = 'prio-pill'); document.getElementById('p-'+p).classList.add('active-'+p); }
+function openModal() { 
+    document.getElementById('taskModal').classList.add('open'); 
     document.getElementById('listSel').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
     document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
-    updateSecSel();
+    updateModalSelects();
 }
-function closeModal() { document.getElementById('taskModal').classList.remove('open'); }
-function updateSecSel() {
-    const l = state.lists.find(x => x.name === document.getElementById('listSel').value);
-    document.getElementById('secSel').innerHTML = '<option value="">No Subsection</option>' + l.sections.map(s => `<option value="${s}">${s}</option>`).join('');
+function closeModal() { document.getElementById('taskModal').classList.remove('open'); state.selectedPrio = 'none'; setPrio('none'); }
+function updateModalSelects() {
+    const list = state.lists.find(l => l.name === document.getElementById('listSel').value);
+    document.getElementById('secSel').innerHTML = '<option value="">Main Space</option>' + list.sections.map(s => `<option value="${s}">${s}</option>`).join('');
+    document.getElementById('labelSel').innerHTML = '<option value="">No Label</option>' + (list.labels || []).map(lb => `<option value="${lb}">${lb}</option>`).join('');
 }
 
 async function submitTask() {
@@ -227,11 +295,11 @@ async function submitTask() {
     const time = document.getElementById('taskTime').value;
     const list = document.getElementById('listSel').value;
     const section = document.getElementById('secSel').value;
-    
+    const label = document.getElementById('labelSel').value;
     if(!title || !date) return;
-    
-    const newTask = { id: Date.now(), title, date, time, list, section };
-    
+
+    const newTask = { id: Date.now(), title, date, time, list, section, label, prio: state.selectedPrio };
+
     if(state.isConnected) {
         try {
             const dateObj = new Date(`${date}T${time || '12:00'}`);
@@ -242,7 +310,6 @@ async function submitTask() {
             newTask.gId = r.result.id;
         } catch(e) {}
     }
-    
     state.tasks.push(newTask);
     save();
     closeModal();
