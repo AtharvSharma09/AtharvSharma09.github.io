@@ -1,89 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Vynix</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+    <title>Vynix</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="ticktick.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="src/ticktick.svg">
 
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
-<style>
-:root {
-  --bg: #030303; 
-  --panel: #0d0d0f; 
-  --glass: rgba(255, 255, 255, 0.03);
-  --divider: rgba(255, 255, 255, 0.08); 
-  --text: #ffffff;
-  --muted: #a1a1aa; 
-  --accent: #a78bfa; 
-  --success: #10b981; 
-  --danger: #f43f5e;
-  --font: 'Outfit', sans-serif;
-}
+    <style>
+        :root {
+            --bg: #030303; 
+            --panel: #0d0d0f; 
+            --glass: rgba(255, 255, 255, 0.03);
+            --divider: rgba(255, 255, 255, 0.08); 
+            --text: #ffffff;
+            --muted: #a1a1aa; 
+            --accent: #a78bfa; 
+            --success: #10b981; 
+            --danger: #f43f5e;
+            --font: 'Outfit', sans-serif;
+        }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: var(--font); outline: none; }
-body { 
-    margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; 
-    display: flex; flex-direction: column; 
-    background-image: radial-gradient(circle at 50% -15%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
-}
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: var(--font); outline: none; }
+        body { 
+            margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; 
+            display: flex; flex-direction: column; 
+            background-image: radial-gradient(circle at 50% -15%, rgba(167, 139, 250, 0.08) 0%, transparent 60%);
+        }
 
-#app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 24px 0; overflow: hidden; }
+        #app { flex: 1; display: flex; flex-direction: column; padding: env(safe-area-inset-top) 24px 0; overflow: hidden; }
 
-/* HEADER */
-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
-.greeting { font-size: 14px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
-.view-title { font-size: 38px; font-weight: 700; letter-spacing: -2px; margin: 0; color: #fff; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+        .greeting { font-size: 14px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
+        .view-title { font-size: 38px; font-weight: 700; letter-spacing: -2px; margin: 0; color: #fff; }
 
-.sync-badge { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); }
-.sync-badge.online { border-color: var(--accent); box-shadow: 0 0 10px rgba(167, 139, 250, 0.1); }
+        .sync-badge { display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); }
+        .sync-badge.online { border-color: var(--accent); box-shadow: 0 0 10px rgba(167, 139, 250, 0.1); }
 
-/* NAVIGATION */
-.nav-container { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-#spaceNav { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: none; }
-#spaceNav::-webkit-scrollbar { display: none; }
-.space-tab { font-size: 16px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 12px 20px; border-radius: 16px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
-.space-tab.active { color: #fff; background: var(--glass); border: 1px solid var(--divider); }
+        .nav-container { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        #spaceNav { display: flex; gap: 10px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: none; }
+        #spaceNav::-webkit-scrollbar { display: none; }
+        .space-tab { font-size: 16px; font-weight: 600; color: var(--muted); white-space: nowrap; padding: 12px 20px; border-radius: 16px; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .space-tab.active { color: #fff; background: var(--glass); border: 1px solid var(--divider); }
 
-.manage-trigger { width: 46px; height: 46px; border-radius: 14px; background: var(--glass); border: 1px solid var(--divider); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.manage-trigger.active { background: var(--danger); color: white; border-color: var(--danger); }
+        .manage-trigger { width: 46px; height: 46px; border-radius: 14px; background: var(--glass); border: 1px solid var(--divider); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .manage-trigger.active { background: var(--danger); color: white; border-color: var(--danger); }
 
-/* TASK CARDS */
-.view { display: none; flex: 1; overflow-y: auto; padding-bottom: 160px; }
-.view.active { display: block; animation: viewIn 0.3s ease-out; }
-@keyframes viewIn { from { opacity: 0; filter: blur(4px); transform: translateY(10px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
+        .view { display: none; flex: 1; overflow-y: auto; padding-bottom: 160px; }
+        .view.active { display: block; animation: viewIn 0.3s ease-out; }
+        @keyframes viewIn { from { opacity: 0; filter: blur(4px); transform: translateY(10px); } to { opacity: 1; filter: blur(0); transform: translateY(0); } }
 
-.item-card { background: var(--panel); padding: 20px; border-radius: 22px; display: flex; align-items: center; gap: 18px; margin-bottom: 14px; border: 1px solid var(--divider); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-.item-card:active { transform: scale(0.97); }
-.circle { width: 24px; height: 24px; border: 2px solid var(--divider); border-radius: 8px; flex-shrink: 0; }
+        .item-card { background: var(--panel); padding: 20px; border-radius: 22px; display: flex; align-items: center; gap: 18px; margin-bottom: 14px; border: 1px solid var(--divider); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .item-card:active { transform: scale(0.97); }
+        .circle { width: 24px; height: 24px; border: 2px solid var(--divider); border-radius: 8px; flex-shrink: 0; }
 
-.card-title { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.3; }
-.card-meta { font-size: 15px; color: var(--muted); margin-top: 4px; }
-.label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-title { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.3; }
+        .card-meta { font-size: 15px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; }
+        .label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 6px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* TABBAR */
-.tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(3, 3, 3, 0.85); backdrop-filter: blur(24px); display: flex; align-items: center; padding: 12px 0 calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); z-index: 1000; }
-.tab-btn { color: var(--muted); font-size: 30px; flex: 1; text-align: center; }
-.tab-btn.active { color: var(--accent); }
-.center-btn { background: var(--accent); color: white; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 5px solid var(--bg); transform: translateY(-28px); box-shadow: 0 12px 30px rgba(167, 139, 250, 0.4); }
+        .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(3, 3, 3, 0.85); backdrop-filter: blur(24px); display: flex; align-items: center; padding: 12px 0 calc(24px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); z-index: 1000; }
+        .tab-btn { color: var(--muted); font-size: 30px; flex: 1; text-align: center; }
+        .tab-btn.active { color: var(--accent); }
+        .center-btn { background: var(--accent); color: white; width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 5px solid var(--bg); transform: translateY(-28px); box-shadow: 0 12px 30px rgba(167, 139, 250, 0.4); }
 
-/* MODALS */
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: flex-end; backdrop-filter: blur(12px); }
-.modal.open { display: flex; }
-.modal-content { background: #121214; width: 100%; border-radius: 36px 36px 0 0; padding: 32px; border-top: 1px solid var(--divider); }
-input, select { width: 100%; padding: 18px; background: #000; border: 1px solid var(--divider); border-radius: 16px; color: white; margin-bottom: 14px; font-size: 16px; }
-input:focus { border-color: var(--accent); }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: flex-end; backdrop-filter: blur(12px); }
+        .modal.open { display: flex; }
+        .modal-content { background: #121214; width: 100%; border-radius: 36px 36px 0 0; padding: 32px; border-top: 1px solid var(--divider); }
+        input, select { width: 100%; padding: 18px; background: #000; border: 1px solid var(--divider); border-radius: 16px; color: white; margin-bottom: 14px; font-size: 16px; }
+        input:focus { border-color: var(--accent); }
+        input[type="date"], input[type="time"] { color-scheme: dark; }
 
-.sub-header { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; }
-</style>
+        .sub-header { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 12px; }
+    </style>
 </head>
 <body>
 
@@ -108,8 +104,7 @@ input:focus { border-color: var(--accent); }
                 <div id="progressBar" style="width:0%; height:100%; background:var(--accent); box-shadow: 0 0 10px var(--accent); transition: 1s cubic-bezier(0.4, 0, 0.2, 1)"></div>
             </div>
         </div>
-        <div class="sub-header-row" style="margin-bottom: 12px;"><div class="sub-header">Focused Objectives</div></div>
-        <div id="todayTasks"></div>
+        <div id="homeContent"></div>
     </div>
 
     <div id="spacesView" class="view">
@@ -217,18 +212,50 @@ function render() {
     const hr = new Date().getHours();
     document.getElementById('greetingText').innerText = hr < 12 ? "Morning Focus" : hr < 18 ? "Afternoon Flow" : "Evening Review";
 
-    const today = new Date().toISOString().split('T')[0];
-    const todayList = state.tasks.filter(t => t.date === today);
+    // Date calculations
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const todayStr = now.toISOString().split('T')[0];
     
-    document.getElementById('statsText').innerText = todayList.length > 0 ? `${todayList.length} objectives today.` : "All systems clear.";
-    document.getElementById('progressBar').style.width = todayList.length > 0 ? '35%' : '100%';
+    const sevenDaysLater = new Date();
+    sevenDaysLater.setDate(now.getDate() + 7);
 
-    document.getElementById('todayTasks').innerHTML = todayList.map(t => cardHtml(t)).join('') || '<p style="color:var(--muted); text-align:center; margin-top:40px; font-size:16px; opacity:0.6">Pure serenity. ✨</p>';
+    // Grouping
+    const todayTasks = state.tasks.filter(t => t.date === todayStr);
+    const upcomingTasks = state.tasks.filter(t => {
+        const d = new Date(t.date);
+        return d > now && d <= sevenDaysLater;
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    // Stats bar logic
+    document.getElementById('statsText').innerText = todayTasks.length > 0 ? `${todayTasks.length} objectives today.` : "All systems clear.";
+    document.getElementById('progressBar').style.width = (todayTasks.length === 0 && upcomingTasks.length === 0) ? '100%' : todayTasks.length === 0 ? '70%' : '35%';
+
+    // Build Home View
+    let homeHtml = "";
+    
+    if (todayTasks.length > 0) {
+        homeHtml += `<div class="sub-header">Focused Objectives (Today)</div>`;
+        homeHtml += todayTasks.map(t => cardHtml(t)).join('');
+    }
+
+    if (upcomingTasks.length > 0) {
+        homeHtml += `<div class="sub-header" style="margin-top:30px">Upcoming Trajectory (7 Days)</div>`;
+        homeHtml += upcomingTasks.map(t => cardHtml(t, true)).join('');
+    }
+
+    // Only show "Serenity" if literally nothing is planned for the next week
+    if (todayTasks.length === 0 && upcomingTasks.length === 0) {
+        homeHtml = `<p style="color:var(--muted); text-align:center; padding:60px 20px; font-size:16px; opacity:0.6">Pure serenity. ✨</p>`;
+    }
+
+    document.getElementById('homeContent').innerHTML = homeHtml;
+
+    // Navigation and Spaces
     document.getElementById('spaceNav').innerHTML = state.lists.map(l => `
         <div class="space-tab ${state.activeSpace === l.name ? 'active' : ''}" onclick="setSpace('${l.name}')">
             ${l.name}
-            ${state.editMode && state.lists.length > 1 ? `<ion-icon name="trash-outline" style="color:var(--danger); font-size:20px" onclick="deleteSpace(event, '${l.name}')"></ion-icon>` : ''}
+            ${state.editMode && state.lists.length > 1 ? `<ion-icon name="trash-outline" style="color:var(--danger); font-size:18px; margin-left:8px" onclick="deleteSpace(event, '${l.name}')"></ion-icon>` : ''}
         </div>
     `).join('') + `<div class="space-tab" style="color:var(--accent)" onclick="addSpace()">+ New</div>`;
 
@@ -236,19 +263,20 @@ function render() {
         <div class="label-chip">
             ${lb} ${state.editMode ? `<ion-icon name="close" onclick="deleteLabel('${lb}')" style="color:var(--danger); margin-left:8px"></ion-icon>` : ''}
         </div>
-    `).join('') || '<p style="font-size:15px; color:var(--muted)">No active tags.</p>';
+    `).join('') || '<p style="font-size:14px; color:var(--muted)">No active tags.</p>';
 
-    const list = state.lists.find(l => l.name === state.activeSpace);
-    let html = state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t)).join('');
-    list.sections.forEach(s => {
-        html += `<div class="sub-header-row" style="margin-top:35px; display:flex; justify-content:space-between; align-items:center;"><div class="sub-header">${s}</div>${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger); font-size:22px" onclick="deleteSection('${s}')"></ion-icon>` : ''}</div>`;
-        html += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, false, true)).join('');
+    const currentSpace = state.lists.find(l => l.name === state.activeSpace);
+    let spaceHtml = state.tasks.filter(t => t.list === state.activeSpace && !t.section).map(t => cardHtml(t, true)).join('');
+    currentSpace.sections.forEach(s => {
+        spaceHtml += `<div class="sub-header-row" style="margin-top:35px; display:flex; justify-content:space-between; align-items:center;"><div class="sub-header">${s}</div>${state.editMode ? `<ion-icon name="close-circle-outline" style="color:var(--danger); font-size:22px" onclick="deleteSection('${s}')"></ion-icon>` : ''}</div>`;
+        spaceHtml += state.tasks.filter(t => t.list === state.activeSpace && t.section === s).map(t => cardHtml(t, true)).join('');
     });
-    html += `<button onclick="addSection()" style="margin-top:20px; background:var(--glass); border:1px dashed var(--divider); color:var(--muted); padding:20px; width:100%; border-radius:22px; font-size:16px; font-weight:600">+ Subsection</button>`;
-    document.getElementById('activeSpaceContent').innerHTML = html;
+    spaceHtml += `<button onclick="addSection()" style="margin-top:20px; background:var(--glass); border:1px dashed var(--divider); color:var(--muted); padding:20px; width:100%; border-radius:22px; font-size:16px; font-weight:600">+ Subsection</button>`;
+    document.getElementById('activeSpaceContent').innerHTML = spaceHtml;
 }
 
-function cardHtml(t, showDate=false, indent=false) {
+function cardHtml(t, showDate=false) {
+    const dateStamp = showDate ? `<span style="color:var(--accent); font-weight:700; margin-right:8px">${t.date.split('-').slice(1).join('/')}</span>` : '';
     return `<div class="item-card" onclick="completeTask(${t.id})">
         <div class="circle"></div>
         <div style="flex:1">
@@ -256,13 +284,14 @@ function cardHtml(t, showDate=false, indent=false) {
                 <span class="card-title">${t.title}</span>
                 ${t.label ? `<span class="label-chip" style="margin:0; padding:4px 10px; font-size:11px">${t.label}</span>` : ''}
             </div>
-            <div class="card-meta">${t.time || 'All Day'}</div>
+            <div class="card-meta">${dateStamp}${t.time || 'All Day'}</div>
         </div>
     </div>`;
 }
 
 async function completeTask(id) {
     const idx = state.tasks.findIndex(t => t.id === id);
+    if(idx === -1) return;
     const t = state.tasks[idx];
     confetti({ particleCount: 40, spread: 60, origin: {y: 0.8}, colors:['#a78bfa', '#fff'] });
     if(state.isConnected && t.gId) { try { await gapi.client.calendar.events.delete({ calendarId: 'primary', eventId: t.gId }); } catch(e) {} }
@@ -293,7 +322,7 @@ async function submitTask() {
     const section = document.getElementById('secSel').value;
     const label = document.getElementById('labelSel').value;
 
-    if(!title || !date) { alert("Title and Date are required."); return; }
+    if(!title || !date) { alert("Objective and Date are required."); return; }
     
     const btn = document.getElementById('submitBtn');
     btn.innerText = "Syncing...";
