@@ -54,18 +54,24 @@
         .view.active { display: block; animation: viewIn 0.3s ease-out; }
         @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; border: 1px solid var(--divider); transition: transform 0.2s; }
+        /* Item Cards */
+        .item-card { background: var(--panel); padding: 16px; border-radius: 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 12px; border: 1px solid var(--divider); transition: 0.2s; }
         .item-card:active { transform: scale(0.98); }
-        .circle { width: 22px; height: 22px; border: 2px solid var(--divider); border-radius: 7px; flex-shrink: 0; }
+        .circle { width: 22px; height: 22px; border: 2px solid var(--divider); border-radius: 7px; flex-shrink: 0; transition: 0.2s; }
         .circle.p1 { border-color: var(--p1); box-shadow: inset 0 0 6px rgba(244, 63, 94, 0.2); }
         .circle.p2 { border-color: var(--p2); }
         .circle.p3 { border-color: var(--p3); }
+        .circle.done { background: var(--accent); border-color: var(--accent); }
 
         .card-title { font-size: 16px; font-weight: 600; color: #fff; line-height: 1.2; word-break: break-word; }
         .card-meta { font-size: 13px; color: var(--muted); margin-top: 4px; display: flex; align-items: center; }
         
-        .label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; }
+        /* Goal specific styles */
+        .goal-chip { background: var(--panel); border: 1px solid var(--divider); padding: 12px 16px; border-radius: 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .goal-chip:active { background: var(--glass); }
 
+        /* General UI */
+        .label-chip { background: var(--glass); border: 1px solid var(--divider); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; }
         .tabbar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(3, 3, 3, 0.95); backdrop-filter: blur(20px); display: flex; align-items: center; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--divider); z-index: 1000; }
         .tab-btn { color: var(--muted); font-size: 28px; flex: 1; text-align: center; }
         .tab-btn.active { color: var(--accent); }
@@ -87,7 +93,7 @@
 <div id="app">
     <header>
         <div>
-            <span class="greeting" id="greetingText">Daybreak</span>
+            <span class="greeting" id="greetingText">System Active</span>
             <h2 class="view-title" id="viewTitle">Vynix</h2>
         </div>
         <div id="syncBtn" class="sync-badge" onclick="handleAuthClick()">
@@ -99,11 +105,20 @@
     <div id="homeView" class="view active">
         <div style="background: var(--panel); padding: 20px; border-radius: 24px; border: 1px solid var(--divider); margin-bottom: 24px;">
             <h3 style="margin:0; font-size:17px; font-weight:600">Daily Trajectory</h3>
-            <p id="statsText" style="color:var(--muted); font-size:14px; margin: 6px 0 14px 0">Processing...</p>
+            <p id="statsText" style="color:var(--muted); font-size:14px; margin: 6px 0 14px 0">Initializing...</p>
             <div style="height:6px; background:var(--divider); border-radius:10px; overflow:hidden">
                 <div id="progressBar" style="width:0%; height:100%; background:var(--accent); transition: 0.8s ease"></div>
             </div>
         </div>
+
+        <div id="goalsSection">
+            <div class="sub-header-row" style="margin-top:0">
+                <div class="sub-header">Weekly Goals</div>
+                <ion-icon name="add-outline" style="color:var(--accent); font-size:20px" onclick="addGoal()"></ion-icon>
+            </div>
+            <div id="goalList" style="margin-bottom: 24px;"></div>
+        </div>
+
         <div id="homeContent"></div>
     </div>
 
@@ -162,6 +177,7 @@ let state = {
     tasks: JSON.parse(localStorage.getItem('vynix_tasks') || '[]'),
     lists: JSON.parse(localStorage.getItem('vynix_lists') || '[{"name":"Inbox","sections":[]}]'),
     globalLabels: JSON.parse(localStorage.getItem('vynix_global_labels') || '[]'),
+    goals: JSON.parse(localStorage.getItem('vynix_goals') || '[]'),
     activeSpace: 'Inbox',
     isConnected: false,
     editMode: false,
@@ -172,22 +188,18 @@ const CLIENT_ID = '632386705456-d9jus2f1eqa59f3bfe6ffv4iofglngh8.apps.googleuser
 const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
-// 1. GAPI & Auth initialization with persistent session check
+// --- AUTH LOGIC (PERSISTENT) ---
+
 function gapiLoaded() { 
     gapi.load('client', async () => { 
-        await gapi.client.init({ 
-            apiKey: API_KEY, 
-            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] 
-        }); 
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }); 
         checkSession(); 
     }); 
 }
 
 function gisLoaded() { 
     state.tokenClient = google.accounts.oauth2.initTokenClient({ 
-        client_id: CLIENT_ID, 
-        scope: SCOPES, 
-        callback: handleAuth 
+        client_id: CLIENT_ID, scope: SCOPES, callback: handleAuth 
     }); 
 }
 
@@ -195,64 +207,52 @@ function checkSession() {
     const savedToken = localStorage.getItem('vynix_g_token');
     if (savedToken) {
         const token = JSON.parse(savedToken);
-        // Check if token is valid (with a 5-minute safety buffer)
+        // Refresh check (5 min buffer)
         if (Date.now() < (token.expires_at - 300000)) { 
             gapi.client.setToken(token); 
             setOnline(true); 
             syncAll(); 
         } else {
-            console.log("Token expired. Waiting for user interaction.");
             setOnline(false);
         }
     }
 }
 
 function handleAuth(resp) {
-    if (resp.error !== undefined) {
-        console.error("Auth Error:", resp);
-        return;
-    }
-    // Set absolute expiration timestamp
+    if (resp.error !== undefined) return;
     resp.expires_at = Date.now() + (resp.expires_in * 1000);
     localStorage.setItem('vynix_g_token', JSON.stringify(resp));
-    
     gapi.client.setToken(resp); 
     setOnline(true); 
     syncAll();
 }
 
 function handleAuthClick() { 
-    if (state.tokenClient) {
-        // If expired or not logged in, show picker. Otherwise refresh.
-        state.tokenClient.requestAccessToken({ prompt: state.isConnected ? '' : 'select_account' }); 
-    } 
+    if (state.tokenClient) state.tokenClient.requestAccessToken({ prompt: state.isConnected ? '' : 'select_account' }); 
 }
 
 function setOnline(is) { 
     state.isConnected = is; 
     const badge = document.getElementById('syncBtn');
-    if (badge) {
+    if(badge) {
         badge.classList.toggle('online', is);
         document.getElementById('syncDot').style.background = is ? 'var(--accent)' : 'var(--muted)';
         document.getElementById('syncStatus').innerText = is ? 'SYNCED' : 'OFFLINE';
     }
 }
 
+// --- CORE APP LOGIC ---
+
 async function syncAll() {
     if (!state.isConnected) return;
     try {
-        const res = await gapi.client.calendar.events.list({ 
-            calendarId: 'primary', 
-            timeMin: new Date().toISOString(), 
-            singleEvents: true 
-        });
+        const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true });
         const events = res.result.items;
         if (events) {
             events.forEach(event => {
                 if(!state.tasks.some(t => t.gId === event.id)) {
                     state.tasks.push({
-                        id: Date.now() + Math.random(),
-                        title: event.summary,
+                        id: Date.now() + Math.random(), title: event.summary,
                         date: (event.start.dateTime || event.start.date).split('T')[0],
                         time: event.start.dateTime ? event.start.dateTime.split('T')[1].substring(0,5) : '',
                         list: 'Inbox', section: '', label: '', priority: '0', gId: event.id
@@ -261,17 +261,39 @@ async function syncAll() {
             });
             save();
         }
-    } catch(err) { 
-        console.error(err);
-        if (err.status === 401) setOnline(false); // Session revoked or invalid
-    }
+    } catch(err) { if(err.status === 401) setOnline(false); }
 }
 
 function save() {
     localStorage.setItem('vynix_tasks', JSON.stringify(state.tasks));
     localStorage.setItem('vynix_lists', JSON.stringify(state.lists));
     localStorage.setItem('vynix_global_labels', JSON.stringify(state.globalLabels));
+    localStorage.setItem('vynix_goals', JSON.stringify(state.goals));
     render();
+}
+
+// Goals Logic
+function addGoal() {
+    const text = prompt("Weekly Goal:");
+    if(text) {
+        state.goals.push({ id: Date.now(), text, done: false });
+        save();
+    }
+}
+
+function toggleGoal(id) {
+    const goal = state.goals.find(g => g.id === id);
+    if(goal) {
+        goal.done = !goal.done;
+        if(goal.done) confetti({ particleCount: 30, spread: 40, origin: {y: 0.8}, colors:['#a78bfa'] });
+        save();
+    }
+}
+
+function deleteGoal(e, id) {
+    e.stopPropagation();
+    state.goals = state.goals.filter(g => g.id !== id);
+    save();
 }
 
 function taskSorter(a, b) {
@@ -287,6 +309,16 @@ function render() {
     const todayStr = now.toISOString().split('T')[0];
     const sevenDaysLater = new Date(); sevenDaysLater.setDate(now.getDate() + 7);
 
+    // 1. Render Goals
+    document.getElementById('goalList').innerHTML = state.goals.map(g => `
+        <div class="goal-chip" onclick="toggleGoal(${g.id})">
+            <div class="circle ${g.done ? 'done' : ''}" style="width:18px; height:18px"></div>
+            <span style="flex:1; font-size:14px; font-weight:500; ${g.done ? 'text-decoration:line-through; color:var(--muted)' : ''}">${g.text}</span>
+            <ion-icon name="trash-outline" onclick="deleteGoal(event, ${g.id})" style="color:var(--muted); font-size:16px"></ion-icon>
+        </div>
+    `).join('') || '<p style="font-size:13px; color:var(--muted); margin:0; opacity:0.6">No weekly goals set.</p>';
+
+    // 2. Filter Tasks
     const todayTasks = state.tasks.filter(t => t.date === todayStr).sort(taskSorter);
     const upcomingTasks = state.tasks.filter(t => {
         if (!t.date) return false;
@@ -295,9 +327,11 @@ function render() {
     }).sort(taskSorter);
     const backlogTasks = state.tasks.filter(t => !t.date).sort(taskSorter);
 
-    document.getElementById('statsText').innerText = todayTasks.length > 0 ? `${todayTasks.length} objectives today.` : "All systems clear.";
+    // 3. Update Progress UI
+    document.getElementById('statsText').innerText = todayTasks.length > 0 ? `${todayTasks.length} objectives today.` : "Trajectory clear.";
     document.getElementById('progressBar').style.width = (todayTasks.length === 0 && upcomingTasks.length === 0) ? '100%' : todayTasks.length === 0 ? '60%' : '30%';
 
+    // 4. Render Task Sections
     let homeHtml = "";
     if (todayTasks.length > 0) homeHtml += `<div class="sub-header">Today</div>` + todayTasks.map(t => cardHtml(t)).join('');
     if (upcomingTasks.length > 0) homeHtml += `<div class="sub-header" style="margin-top:24px">Next 7 Days</div>` + upcomingTasks.map(t => cardHtml(t, true)).join('');
@@ -305,6 +339,7 @@ function render() {
     if (homeHtml === "") homeHtml = `<p style="color:var(--muted); text-align:center; padding:40px 0; font-size:14px; opacity:0.6">Pure serenity. ✨</p>`;
     document.getElementById('homeContent').innerHTML = homeHtml;
 
+    // 5. Render Navigation & Labels
     document.getElementById('spaceNav').innerHTML = state.lists.map(l => `
         <div class="space-tab ${state.activeSpace === l.name ? 'active' : ''}" onclick="setSpace('${l.name}')">
             ${l.name}
@@ -318,6 +353,7 @@ function render() {
         </div>
     `).join('') || '<p style="font-size:13px; color:var(--muted)">No tags defined.</p>';
 
+    // 6. Render Spaces View
     const currentList = state.lists.find(l => l.name === state.activeSpace);
     let spaceHtml = state.tasks.filter(t => t.list === state.activeSpace && !t.section).sort(taskSorter).map(t => cardHtml(t, true)).join('');
     currentList.sections.forEach(s => {
@@ -354,6 +390,8 @@ async function completeTask(id) {
     state.tasks.splice(idx, 1); save();
 }
 
+// --- MODAL & UI ACTIONS ---
+
 function openModal() { 
     document.getElementById('taskModal').classList.add('open'); 
     document.getElementById('listSel').innerHTML = state.lists.map(l => `<option value="${l.name}">${l.name}</option>`).join(''); 
@@ -377,7 +415,6 @@ async function submitTask() {
     const section = document.getElementById('secSel').value;
     const label = document.getElementById('labelSel').value;
     const priority = document.getElementById('prioritySel').value;
-    
     if(!title.trim()) return;
 
     let gId = null;
