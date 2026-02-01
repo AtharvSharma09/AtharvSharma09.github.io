@@ -40,7 +40,7 @@
         .greeting { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 2px; }
         .view-title { font-size: 32px; font-weight: 700; letter-spacing: -1.5px; margin: 0; color: #fff; }
 
-        .sync-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); cursor: pointer; }
+        .sync-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--glass); border-radius: 100px; border: 1px solid var(--divider); cursor: pointer; transition: 0.3s; }
         .sync-badge.online { border-color: var(--accent); box-shadow: 0 0 10px rgba(167, 139, 250, 0.1); }
 
         .nav-container { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; width: 100%; }
@@ -172,33 +172,80 @@ const CLIENT_ID = '632386705456-d9jus2f1eqa59f3bfe6ffv4iofglngh8.apps.googleuser
 const API_KEY = 'AIzaSyADBW3SC11AhlD4VV1gemu0qOvLmYDnyiU';
 const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
 
-function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] }); checkSession(); }); }
-function gisLoaded() { state.tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: handleAuth }); }
+// 1. GAPI & Auth initialization with persistent session check
+function gapiLoaded() { 
+    gapi.load('client', async () => { 
+        await gapi.client.init({ 
+            apiKey: API_KEY, 
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"] 
+        }); 
+        checkSession(); 
+    }); 
+}
+
+function gisLoaded() { 
+    state.tokenClient = google.accounts.oauth2.initTokenClient({ 
+        client_id: CLIENT_ID, 
+        scope: SCOPES, 
+        callback: handleAuth 
+    }); 
+}
+
 function checkSession() {
     const savedToken = localStorage.getItem('vynix_g_token');
     if (savedToken) {
         const token = JSON.parse(savedToken);
-        if (Date.now() < token.expires_at) { gapi.client.setToken(token); setOnline(true); syncAll(); }
+        // Check if token is valid (with a 5-minute safety buffer)
+        if (Date.now() < (token.expires_at - 300000)) { 
+            gapi.client.setToken(token); 
+            setOnline(true); 
+            syncAll(); 
+        } else {
+            console.log("Token expired. Waiting for user interaction.");
+            setOnline(false);
+        }
     }
 }
+
 function handleAuth(resp) {
-    if (resp.error !== undefined) throw resp;
+    if (resp.error !== undefined) {
+        console.error("Auth Error:", resp);
+        return;
+    }
+    // Set absolute expiration timestamp
     resp.expires_at = Date.now() + (resp.expires_in * 1000);
     localStorage.setItem('vynix_g_token', JSON.stringify(resp));
-    gapi.client.setToken(resp); setOnline(true); syncAll();
+    
+    gapi.client.setToken(resp); 
+    setOnline(true); 
+    syncAll();
 }
-function handleAuthClick() { if (state.tokenClient) state.tokenClient.requestAccessToken({prompt: 'consent'}); }
+
+function handleAuthClick() { 
+    if (state.tokenClient) {
+        // If expired or not logged in, show picker. Otherwise refresh.
+        state.tokenClient.requestAccessToken({ prompt: state.isConnected ? '' : 'select_account' }); 
+    } 
+}
+
 function setOnline(is) { 
     state.isConnected = is; 
-    document.getElementById('syncBtn').classList.toggle('online', is);
-    document.getElementById('syncDot').style.background = is ? 'var(--accent)' : 'var(--muted)';
-    document.getElementById('syncStatus').innerText = is ? 'SYNCED' : 'OFFLINE';
+    const badge = document.getElementById('syncBtn');
+    if (badge) {
+        badge.classList.toggle('online', is);
+        document.getElementById('syncDot').style.background = is ? 'var(--accent)' : 'var(--muted)';
+        document.getElementById('syncStatus').innerText = is ? 'SYNCED' : 'OFFLINE';
+    }
 }
 
 async function syncAll() {
     if (!state.isConnected) return;
     try {
-        const res = await gapi.client.calendar.events.list({ calendarId: 'primary', timeMin: new Date().toISOString(), singleEvents: true });
+        const res = await gapi.client.calendar.events.list({ 
+            calendarId: 'primary', 
+            timeMin: new Date().toISOString(), 
+            singleEvents: true 
+        });
         const events = res.result.items;
         if (events) {
             events.forEach(event => {
@@ -214,7 +261,10 @@ async function syncAll() {
             });
             save();
         }
-    } catch(err) { console.error(err); }
+    } catch(err) { 
+        console.error(err);
+        if (err.status === 401) setOnline(false); // Session revoked or invalid
+    }
 }
 
 function save() {
@@ -225,11 +275,9 @@ function save() {
 }
 
 function taskSorter(a, b) {
-    // Sort by priority first (1, 2, 3, then 0)
     const pA = a.priority === '0' ? 99 : parseInt(a.priority);
     const pB = b.priority === '0' ? 99 : parseInt(b.priority);
     if (pA !== pB) return pA - pB;
-    // Then by date
     if (a.date !== b.date) return new Date(a.date || '9999-12-31') - new Date(b.date || '9999-12-31');
     return 0;
 }
@@ -371,5 +419,4 @@ function changeTab(v, el) {
 render();
 </script>
 </body>
-</html>
 </html>
